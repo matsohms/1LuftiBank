@@ -1,62 +1,62 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-import os, pyotp
-from .forms import LoginForm
+import os
+import pyotp
+from .forms import LoginForm, CustomerForm
+from .models import Customer
 
-# Login-View ohne DB
+
 def login_view(request):
     error = None
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            acc  = form.cleaned_data['account_number']
-            pin  = form.cleaned_data['pin']
+            acc = form.cleaned_data['account_number']
+            pin = form.cleaned_data['pin']
             code = form.cleaned_data['totp_code']
 
-            ADMIN_ACC    = os.getenv('ADMIN_ACCOUNT_NUMBER')
-            ADMIN_PIN    = os.getenv('ADMIN_PIN')
-            ADMIN_SECRET = os.getenv('ADMIN_TOTP_SECRET')
+            admin_acc = os.getenv('ADMIN_ACCOUNT_NUMBER')
+            admin_pin = os.getenv('ADMIN_PIN')
+            admin_secret = os.getenv('ADMIN_TOTP_SECRET')
 
-            if acc != ADMIN_ACC or pin != ADMIN_PIN:
+            if acc != admin_acc or pin != admin_pin:
                 error = 'Kontonummer oder PIN falsch.'
             else:
-                totp = pyotp.TOTP(ADMIN_SECRET)
+                totp = pyotp.TOTP(admin_secret)
                 if not totp.verify(code):
                     error = 'Falscher TOTP-Code.'
                 else:
                     request.session['is_admin'] = True
-                    return redirect('admin-dashboard')
+                    return redirect('admin_home')
     else:
         form = LoginForm()
 
     return render(request, 'login.html', {'form': form, 'error': error})
 
-# Admin-Dashboard
+
+def admin_home(request):
+    if not request.session.get('is_admin'):
+        return redirect('login')
+    return render(request, 'admin_home.html')
+
 
 def admin_dashboard(request):
     if not request.session.get('is_admin'):
         return redirect('login')
-    customers = []  # später mit echten Daten
-    return render(request, 'admin_dashboard.html', {'customers': customers})
+    return render(request, 'admin_dashboard.html')
 
-# Admin-Startseite (neue URL '/admin/')
-def admin_home(request):
-    # Zugriff nur für eingeloggte Admins
+
+def customer_list(request):
     if not request.session.get('is_admin'):
         return redirect('login')
-    # Einfache Übersichtsseite
-    return render(request, 'admin_home.html')
-
-# Kundenübersicht
- def customer_list(request):  # Neu
-    if not request.session.get('is_admin'): return redirect('login')
     customers = Customer.objects.all()
     return render(request, 'customer_list.html', {'customers': customers})
 
-# Kunde hinzufügen
- def customer_create(request):  # Neu
-    if not request.session.get('is_admin'): return redirect('login')
-    if request.method=='POST':
+
+def customer_create(request):
+    if not request.session.get('is_admin'):
+        return redirect('login')
+    if request.method == 'POST':
         form = CustomerForm(request.POST)
         if form.is_valid():
             form.save()
@@ -65,8 +65,9 @@ def admin_home(request):
         form = CustomerForm()
     return render(request, 'customer_form.html', {'form': form})
 
-# Kundenprofil
- def customer_detail(request, pk):  # Neu
-    if not request.session.get('is_admin'): return redirect('login')
+
+def customer_detail(request, pk):
+    if not request.session.get('is_admin'):
+        return redirect('login')
     customer = get_object_or_404(Customer, pk=pk)
     return render(request, 'customer_detail.html', {'customer': customer})
