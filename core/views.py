@@ -46,3 +46,27 @@ def admin_home(request):
         return redirect('login')
     # Einfache Übersichtsseite
     return render(request, 'admin_home.html')
+
+# Kundenübersicht
+ def customer_list(request):  # Neu
+    if not request.session.get('is_admin'): return redirect('login')
+    customers = Customer.objects.all()
+    return render(request, 'customer_list.html', {'customers': customers})
+
+# Kunde hinzufügen
+ def customer_create(request):  # Neu
+    if not request.session.get('is_admin'): return redirect('login')
+    if request.method=='POST':
+        form = CustomerForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('customer_list')
+    else:
+        form = CustomerForm()
+    return render(request, 'customer_form.html', {'form': form})
+
+# Kundenprofil
+ def customer_detail(request, pk):  # Neu
+    if not request.session.get('is_admin'): return redirect('login')
+    customer = get_object_or_404(Customer, pk=pk)
+    return render(request, 'customer_detail.html', {'customer': customer})
