@@ -40,6 +40,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'banking_portal.wsgi.application'
 
-# Kein DATABASES-Block – kein ORM genutzt
+# Datenbankkonfiguration: SQLite Default
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 STATIC_URL = '/static/'
