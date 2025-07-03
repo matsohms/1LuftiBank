@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Kundenübersicht</title>
+  <style>
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f4f4f4; }
+    .add-button { margin-top: 20px; padding: 8px 12px; background: #28A745; color: white; text-decoration: none; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Kundenübersicht</h1>
+  <a href="{% url 'customer_create' %}" class="add-button">Kunde hinzufügen</a>
+  <table>
+    <thead>
+      <tr><th>Name</th><th>Aktion</th></tr>
+    </thead>
+    <tbody>
+      {% for customer in customers %}
+      <tr>
+        <td>{{ customer.last_name }}, {{ customer.first_name }}</td>
+        <td><a href="{% url 'customer_detail' customer.pk %}">Profil anzeigen</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="2">Keine Kunden vorhanden.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
