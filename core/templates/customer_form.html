@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Kunde hinzufügen</title>
+  <style>
+    input, select { display: block; width: 300px; padding: 8px; margin-bottom: 12px; }
+    label { font-weight: bold; }
+    button { padding: 8px 16px; }
+  </style>
+</head>
+<body>
+  <h1>Kunde hinzufügen</h1>
+  <form method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Kunde hinzufügen</button>
+  </form>
+</body>
+</html>
