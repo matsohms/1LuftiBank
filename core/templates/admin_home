@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Startseite</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    nav a { margin-right: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Admin Startseite</h1>
+  <nav>
+    <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+    <a href="{% url 'customer_list' %}">Kundenübersicht</a>
+    <a href="/logout/">Logout</a>
+  </nav>
+</body>
+</html>
