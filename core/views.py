@@ -33,4 +33,4 @@ def login_view(request):
 
 # Einfaches Admin-Dashboard
 def admin_dashboard(request):
-    return HttpResponse('<h1>Admin-Dashboard</h1><p>Erfolgreich eingeloggt!</p>')
+    return HttpResponse('<h1>Admin-Dashboard</h1><p>Erfolgreich 
