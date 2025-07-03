@@ -7,11 +7,10 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'banking_portal.settings')
 # WSGI-App erstellen
 application = get_wsgi_application()
 
-# Automatisch Datenbank-Migrationen ausführen (Session- & Core-Model-Tabellen)
+# Automatisch Datenbank-Migrationen und SyncDB-Mode beim Start
 try:
     from django.core.management import call_command
-    call_command('makemigrations', '--noinput')
-    call_command('migrate', '--noinput')
+    # Erst Migrationen anwenden (falls vorhanden)
+    call_command('migrate', '--noinput', '--run-syncdb')
 except Exception:
-    # Fehler ignorieren, falls schon migriert oder im Production nicht gewünscht
     pass
