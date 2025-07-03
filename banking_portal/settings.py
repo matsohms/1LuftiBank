@@ -2,30 +2,29 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Lade Umgebungsvariablen aus .env, falls vorhanden
+# Lade Umgebungsvariablen
 BASE_DIR = Path(__file__).resolve().parent.parent
-env_path = BASE_DIR / '.env'
-if env_path.exists():
-    load_dotenv(env_path)
+env_file = BASE_DIR / '.env'
+if env_file.exists():
+    load_dotenv(env_file)
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-# Erlaube im Debug-Modus alle Hosts. Im Production-Fall packst du
-# z.B. 'deine-domain.com' in ALLOWED_HOSTS.
-if DEBUG:
-    ALLOWED_HOSTS = ['*']
-else:
-    ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+# Erlaube alle Hosts im Debug-Modus
+ALLOWED_HOSTS = ['*'] if DEBUG else os.getenv('ALLOWED_HOSTS', '').split(',')
 
 INSTALLED_APPS = [
+    'django.contrib.sessions',
     'django.contrib.staticfiles',
     'core',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
 ]
 
 ROOT_URLCONF = 'banking_portal.urls'
@@ -41,5 +40,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'banking_portal.wsgi.application'
 
-# Keine Datenbank konfiguriert – reines ENV-basiertes Admin-Login
+# Kein DATABASES-Block – kein ORM genutzt
+
 STATIC_URL = '/static/'
