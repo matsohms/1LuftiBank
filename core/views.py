@@ -25,6 +25,8 @@ def login_view(request):
                 if not totp.verify(code):
                     error = 'Falscher TOTP-Code.'
                 else:
+                    # Setze Session-Flag
+                    request.session['is_admin'] = True
                     return redirect('admin-dashboard')
     else:
         form = LoginForm()
@@ -33,4 +35,7 @@ def login_view(request):
 
 # Einfaches Admin-Dashboard
 def admin_dashboard(request):
-    return HttpResponse('<h1>Admin-Dashboard</h1><p>Erfolgreich 
+    # Nur eingeloggte Admins
+    if not request.session.get('is_admin'):
+        return redirect('login')
+    return HttpResponse('<h1>Admin-Dashboard</h1><p>Erfolgreich eingeloggt!</p>')
