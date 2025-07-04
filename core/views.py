@@ -1,7 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
-import os
-import pyotp
+import os, pyotp
 from .forms import LoginForm, CustomerForm
 from .models import Customer
 
@@ -71,3 +69,42 @@ def customer_detail(request, pk):
         return redirect('login')
     customer = get_object_or_404(Customer, pk=pk)
     return render(request, 'customer_detail.html', {'customer': customer})
+
+def customer_list(request):
+    if not request.session.get('is_admin'): return redirect('login')
+    customers = Customer.objects.all()
+    return render(request, 'customer_list.html', {'customers': customers})
+
+def customer_create(request):
+    if not request.session.get('is_admin'): return redirect('login')
+    if request.method=='POST':
+        form = CustomerForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('customer_list')
+    else:
+        form = CustomerForm()
+    return render(request, 'customer_form.html', {'form': form})
+
+def customer_detail(request, pk):
+    if not request.session.get('is_admin'): return redirect('login')
+    customer = get_object_or_404(Customer, pk=pk)
+    return render(request, 'customer_detail.html', {'customer': customer})
+
+def customer_delete(request, pk):
+    if not request.session.get('is_admin'): return redirect('login')
+    customer = get_object_or_404(Customer, pk=pk)
+    if request.method=='POST':
+        customer.delete()
+        return redirect('customer_list')
+    return render(request, 'customer_confirm_delete.html', {'customer': customer})
+
+def customer_security(request, pk):
+    if not request.session.get('is_admin'): return redirect('login')
+    customer = get_object_or_404(Customer, pk=pk)
+    correct = None
+    if request.method=='POST':
+        answer = request.POST.get('security_answer')
+        correct = (answer == customer.security_answer)
+    return render(request, 'customer_security.html', {'customer': customer, 'correct': correct})
+    
