@@ -90,12 +90,22 @@ def customer_detail(request, pk):
 
 # Kunde löschen
 def customer_delete(request, pk):
-    if not request.session.get('is_admin'): return redirect('login')
+    if not request.session.get('is_admin'):
+        return redirect('login')
     customer = get_object_or_404(Customer, pk=pk)
+    expected = f'kunde {customer.customer_number} löschen'
     if request.method == 'POST':
-        customer.delete()
-        return redirect('customer_list')
-    return render(request, 'customer_confirm_delete.html', {'customer': customer})
+        confirm = request.POST.get('confirm_input','').strip().lower()
+        if confirm == expected:
+            customer.delete()
+            messages.success(request, f'Kunde {customer.customer_number} wurde gelöscht.')
+            return redirect('customer_list')
+        else:
+            messages.error(request, f'Eingabe stimmt nicht. Bitte genau "{expected}" eingeben.')
+    return render(request, 'customer_confirm_delete.html', {
+        'customer': customer,
+        'expected': expected
+    })
 
 # Sicherheitsprüfung
 def customer_security(request, pk):
