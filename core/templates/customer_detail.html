@@ -1,27 +1,17 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <title>Kundenprofil</title>
-  <style>
-    dl { width: 400px; }
-    dt { font-weight: bold; margin-top: 10px; }
-    dd { margin-left: 20px; }
-  </style>
-</head>
-<body>
-  <h1>Kundenprofil</h1>
-  <dl>
-    <dt>Vorname</dt><dd>{{ customer.first_name }}</dd>
-    <dt>Nachname</dt><dd>{{ customer.last_name }}</dd>
-    <dt>Weitere Vornamen</dt><dd>{{ customer.middle_names }}</dd>
-    <dt>Adresse</dt>
-      <dd>{{ customer.address_line1 }}<br>
-          {{ customer.address_line2 }}<br>
-          {{ customer.postal_code }} {{ customer.city }}</dd>
-    <dt>Geburtsdatum</dt><dd>{{ customer.birth_date }}</dd>
-    <dt>Telefon</dt><dd>{{ customer.phone }}</dd>
-    <dt>E-Mail</dt><dd>{{ customer.email }}</dd>
-  </dl>
-</body>
-</html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Profil</title>
+<style>body{font-family:Arial;} .container{width:600px;margin:40px auto;}</style></head><body>
+  <div class="container">
+    <h1>Profil: {{ customer.first_name }} {{ customer.last_name }}</h1>
+    <p>Straße: {{ customer.address_line1 }} {{ customer.house_number }}</p>
+    <p>PLZ/Ort: {{ customer.postal_code }} {{ customer.city }}</p>
+    <p>Adresszusatz: {{ customer.address_extra }}</p>
+    <p>Geburtsdatum: {{ customer.birth_date }}</p>
+    <p>Telefon: {{ customer.phone }}</p>
+    <p>E-Mail: {{ customer.email }}</p>
+    <p>Passnummer: {{ customer.passport_number }}</p>
+    {% if customer.security_enabled %}
+      <a href="{% url 'customer_security' customer.pk %}">Sicherheitsfrage prüfen</a>
+    {% endif %}
+    <br><a href="{% url 'customer_delete' customer.pk %}">Löschen</a>
+  </div>
+</body></html>
