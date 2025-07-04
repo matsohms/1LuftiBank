@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 import os, pyotp
 from .forms import LoginForm, CustomerForm
 from .models import Customer
+from django.db.models import Q
 
 # Login direkt zum Dashboard
 def login_view(request):
