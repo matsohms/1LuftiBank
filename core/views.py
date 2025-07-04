@@ -34,9 +34,21 @@ def admin_dashboard(request):
 
 # Kundenübersicht
 def customer_list(request):
-    if not request.session.get('is_admin'): return redirect('login')
+    if not request.session.get('is_admin'):
+        return redirect('login')
+
+    q = request.GET.get('q', '')
     customers = Customer.objects.all()
-    return render(request, 'customer_list.html', {'customers': customers})
+    if q:
+        customers = customers.filter(
+            Q(last_name__icontains=q) |
+            Q(first_name__icontains=q) |
+            Q(customer_number__icontains=q)
+        )
+    return render(request, 'customer_list.html', {
+        'customers': customers,
+        'q': q
+    })
 
 # Kunde hinzufügen
 def customer_create(request):
