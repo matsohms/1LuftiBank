@@ -19,8 +19,15 @@
   <div class="container">
     <h1>Profil</h1>
     <table>
-      <tr><th>Name</th><td>{{ customer.first_name }} {% if customer.middle_names %}{{ customer.middle_names }} {% endif %}{{ customer.last_name }}</td></tr>
-      <tr><th>Adresse</th><td>{{ customer.address_line1 }} {{ customer.house_number }}, {{ customer.postal_code }} {{ customer.city }}</td></tr>
+      <tr><th>Kunden-Nr.</th><td>{{ customer.customer_number }}</td></tr>
+      <tr><th>Erstellt am</th><td>{{ customer.created_at|date:"d.m.Y H:i" }}</td></tr>
+      <tr><th>Name</th>
+          <td>{{ customer.first_name }} {% if customer.middle_names %}{{ customer.middle_names }} {% endif %}{{ customer.last_name }}</td>
+      </tr>
+      <tr><th>Adresse</th>
+          <td>{{ customer.address_line1 }} {{ customer.house_number }},<br>
+              {{ customer.postal_code }} {{ customer.city }}</td>
+      </tr>
       {% if customer.address_extra %}
       <tr><th>Adresszusatz</th><td>{{ customer.address_extra }}</td></tr>
       {% endif %}
@@ -31,8 +38,37 @@
       <tr><th>Passnummer</th><td>{{ customer.passport_number }}</td></tr>
       {% endif %}
     </table>
-    <a href="{% url 'customer_edit' customer.pk %}"><button class="btn-primary">Kunde bearbeiten</button></a>
-    <a href="{% url 'customer_list' %}"><button class="btn-secondary">Zurück</button></a>
+
+    <!-- Aktionen -->
+    <div style="margin-bottom:20px;">
+      <a href="{% url 'customer_edit' customer.pk %}"><button class="btn-primary">Kunde bearbeiten</button></a>
+      <a href="{% url 'customer_list' %}"><button class="btn-secondary">Zurück</button></a>
+    </div>
+
+    <!-- Sicherheitsprüfung -->
+    {% if customer.security_level != 'none' %}
+    <div style="margin-top:30px;">
+      <h2>Sicherheitsprüfung</h2>
+      <form method="post" action="{% url 'customer_security' customer.pk %}">{% csrf_token %}
+        <table>
+          <tr><th>Art</th><td>{{ customer.get_security_level_display }}</td></tr>
+          {% if customer.security_level == 'question' %}
+          <tr><th>Frage</th><td>{{ customer.get_security_question_display }}</td></tr>
+          <tr><th>Antwort</th>
+            <td><input type="password" name="security_answer"
+                       style="width:100%; padding:8px; background:#fff; border:1px solid #ccc;"></td>
+          </tr>
+          {% elif customer.security_level == 'pin' %}
+          <tr><th>PIN</th>
+            <td><input type="password" name="security_answer"
+                       style="width:100%; padding:8px; background:#fff; border:1px solid #ccc;"></td>
+          </tr>
+          {% endif %}
+        </table>
+        <button type="submit" class="btn-primary">Überprüfen</button>
+      </form>
+    </div>
+    {% endif %}
   </div>
 </body>
 </html>
