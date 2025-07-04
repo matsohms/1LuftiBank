@@ -3,6 +3,8 @@ import os, pyotp
 from .forms import LoginForm, CustomerForm
 from .models import Customer
 from django.db.models import Q
+from django.contrib import messages
+
 
 # Login direkt zum Dashboard
 def login_view(request):
