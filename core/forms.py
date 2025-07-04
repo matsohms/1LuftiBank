@@ -7,17 +7,25 @@ class LoginForm(forms.Form):
     totp_code      = forms.CharField(label='TOTP-Code', max_length=6)
 
 class CustomerForm(forms.ModelForm):
-    security_enabled = forms.BooleanField(label='Mit Sicherheitsfrage', required=False)
+    SECURITY_LEVELS = [
+        ('none', 'Keine'),
+        ('question', 'Sicherheitsfrage'),
+        ('pin', 'PIN'),
+    ]
+    security_level = forms.ChoiceField(label='Erweiterte Sicherheitsstufe',
+        choices=SECURITY_LEVELS, required=False)
+    security_answer = forms.CharField(label='Antwort', required=False,
+        widget=forms.TextInput)
+
     class Meta:
         model = Customer
         fields = [
             'first_name','last_name','middle_names',
-            'address_line1','house_number', 'postal_code','city','address_extra',
+            'address_line1','house_number','postal_code','city','address_extra',
             'birth_date','phone','email','passport_number',
-            'security_enabled','security_question','security_answer'
+            'security_level','security_question','security_answer'
         ]
         widgets = {
             'birth_date': forms.DateInput(attrs={'type':'date'}),
             'security_question': forms.Select(choices=SECURITY_QUESTIONS),
-            'security_answer': forms.PasswordInput(render_value=False)
         }
