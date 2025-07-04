@@ -1,0 +1,9 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Löschen</title>
+<style>body{font-family:Arial;} .container{width:400px;margin:40px auto;background:#f8d7da;padding:20px;}</style></head><body>
+  <div class="container">
+    <h1>Kunde löschen?</h1>
+    <p>Möchten Sie {{ customer }} wirklich löschen?</p>
+    <form method="post">{% csrf_token %}<button type="submit">Ja, löschen</button></form>
+    <a href="{% url 'customer_list' %}">Abbrechen</a>
+  </div>
+</body></html>
