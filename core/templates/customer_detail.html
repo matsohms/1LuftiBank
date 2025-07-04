@@ -1,17 +1,38 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Profil</title>
-<style>body{font-family:Arial;} .container{width:600px;margin:40px auto;}</style></head><body>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Kundenprofil</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7f7; }
+    .container { background: #eee; padding: 20px; margin: 40px auto; width: 90%; max-width: 600px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    tr:nth-child(odd) { background: #ddd; }
+    tr:nth-child(even){ background: #ccc; }
+    th, td { padding: 12px; text-align: left; }
+    button { border: none; padding: 8px 16px; font-family: Arial; margin-right: 10px; }
+    .btn-primary { background: #007bff; color: #fff; }
+    .btn-secondary { background: #6c757d; color: #fff; }
+  </style>
+</head>
+<body>
   <div class="container">
-    <h1>Profil: {{ customer.first_name }} {{ customer.last_name }}</h1>
-    <p>Straße: {{ customer.address_line1 }} {{ customer.house_number }}</p>
-    <p>PLZ/Ort: {{ customer.postal_code }} {{ customer.city }}</p>
-    <p>Adresszusatz: {{ customer.address_extra }}</p>
-    <p>Geburtsdatum: {{ customer.birth_date }}</p>
-    <p>Telefon: {{ customer.phone }}</p>
-    <p>E-Mail: {{ customer.email }}</p>
-    <p>Passnummer: {{ customer.passport_number }}</p>
-    {% if customer.security_enabled %}
-      <a href="{% url 'customer_security' customer.pk %}">Sicherheitsfrage prüfen</a>
-    {% endif %}
-    <br><a href="{% url 'customer_delete' customer.pk %}">Löschen</a>
+    <h1>Profil</h1>
+    <table>
+      <tr><th>Name</th><td>{{ customer.first_name }} {% if customer.middle_names %}{{ customer.middle_names }} {% endif %}{{ customer.last_name }}</td></tr>
+      <tr><th>Adresse</th><td>{{ customer.address_line1 }} {{ customer.house_number }}, {{ customer.postal_code }} {{ customer.city }}</td></tr>
+      {% if customer.address_extra %}
+      <tr><th>Adresszusatz</th><td>{{ customer.address_extra }}</td></tr>
+      {% endif %}
+      <tr><th>Geburtsdatum</th><td>{{ customer.birth_date }}</td></tr>
+      <tr><th>Telefon</th><td>{{ customer.phone }}</td></tr>
+      <tr><th>E-Mail</th><td>{{ customer.email }}</td></tr>
+      {% if customer.passport_number %}
+      <tr><th>Passnummer</th><td>{{ customer.passport_number }}</td></tr>
+      {% endif %}
+    </table>
+    <a href="{% url 'customer_edit' customer.pk %}"><button class="btn-primary">Kunde bearbeiten</button></a>
+    <a href="{% url 'customer_list' %}"><button class="btn-secondary">Zurück</button></a>
   </div>
-</body></html>
+</body>
+</html>
