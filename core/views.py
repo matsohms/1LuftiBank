@@ -65,9 +65,13 @@ def customer_edit(request, pk):
 
 # Kundenprofil
 def customer_detail(request, pk):
-    if not request.session.get('is_admin'): return redirect('login')
+    if not request.session.get('is_admin'):
+        return redirect('login')
     customer = get_object_or_404(Customer, pk=pk)
-    return render(request, 'customer_detail.html', {'customer': customer})
+    return render(request, 'customer_detail.html', {
+        'customer': customer
+    })
+    
 
 # Kunde löschen
 def customer_delete(request, pk):
