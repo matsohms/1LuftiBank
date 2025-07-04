@@ -1,32 +1,55 @@
 <!DOCTYPE html>
 <html lang="de">
-<head><meta charset="UTF-8"><title>Kunde hinzufügen</title>
-<style>
-  body { font-family: Arial, sans-serif; background:#f0f0f0; }
-  .container { background:#ddd; padding:20px; width:600px; margin:40px auto; }
-  .row { display:flex; gap:10px; }
-  .row input { flex:1; background:#fff; border:none; padding:8px; }
-  label { flex:1; padding-top:10px; }
-  button { margin-top:10px; padding:8px 16px; }
-</style></head>
+<head>
+  <meta charset="UTF-8">
+  <title>Kunde hinzufügen</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7f7; }
+    .container { background: #eee; padding: 20px; margin: 40px auto; width: 90%; max-width: 600px; }
+    .row { display: flex; gap: 10px; margin-bottom: 15px; }
+    .row label { flex: 1; padding-top: 8px; }
+    .row input, .row select { flex: 1; padding: 8px; background: #fff; border: 1px solid #ccc; }
+    button { border: none; padding: 8px 16px; font-family: Arial; margin-right: 10px; }
+    .btn-primary { background: #007bff; color: #fff; }
+    .btn-secondary { background: #6c757d; color: #fff; }
+  </style>
+</head>
 <body>
   <div class="container">
     <h1>Kunde hinzufügen</h1>
     <form method="post">{% csrf_token %}
-      <div class="row"><label>Vorname</label>{{ form.first_name }}</div>
-      <div class="row"><label>Nachname</label>{{ form.last_name }}</div>
-      <div class="row"><label>Weitere Vornamen</label>{{ form.middle_names }}</div>
-      <div class="row"><label>Straße</label>{{ form.address_line1 }}<label>Hausnummer</label>{{ form.house_number }}</div>
-      <div class="row"><label>PLZ</label>{{ form.postal_code }}<label>Ort</label>{{ form.city }}</div>
-      <div class="row"><label>Adresszusatz</label>{{ form.address_extra }}</div>
-      <div class="row"><label>Geburtsdatum</label>{{ form.birth_date }}</div>
-      <div class="row"><label>Telefon</label>{{ form.phone }}<label>E-Mail</label>{{ form.email }}</div>
-      <div class="row"><label>Passnummer</label>{{ form.passport_number }}</div>
-      <div class="row"><label>Sicherheitsfrage aktiv</label>{{ form.security_enabled }}</div>
-      {% if form.security_enabled.value %}
-      <div class="row"><label>Frage</label>{{ form.security_question }}<label>Antwort</label>{{ form.security_answer }}</div>
+      <div class="row"><label for="id_first_name">Vorname</label>{{ form.first_name }}</div>
+      <div class="row"><label for="id_last_name">Nachname</label>{{ form.last_name }}</div>
+      <div class="row"><label for="id_middle_names">Weitere Vornamen</label>{{ form.middle_names }}</div>
+
+      <div class="row">
+        <label for="id_address_line1">Straße</label>{{ form.address_line1 }}
+        <label for="id_house_number">Hausnummer</label>{{ form.house_number }}
+      </div>
+      <div class="row">
+        <label for="id_postal_code">PLZ</label>{{ form.postal_code }}
+        <label for="id_city">Ort</label>{{ form.city }}
+      </div>
+      <div class="row"><label for="id_address_extra">Adresszusatz</label>{{ form.address_extra }}</div>
+      <div class="row"><label for="id_birth_date">Geburtsdatum</label>{{ form.birth_date }}</div>
+      <div class="row">
+        <label for="id_phone">Telefon</label>{{ form.phone }}
+        <label for="id_email">E-Mail</label>{{ form.email }}
+      </div>
+      <div class="row"><label for="id_passport_number">Passnummer</label>{{ form.passport_number }}</div>
+
+      <div class="row">
+        <label for="id_security_level">Erweiterte Sicherheitsstufe</label>{{ form.security_level }}
+      </div>
+      {% if form.security_level.value != 'none' %}
+      <div class="row">
+        <label for="id_security_question">Frage</label>{{ form.security_question }}
+        <label for="id_security_answer">Antwort</label>{{ form.security_answer }}
+      </div>
       {% endif %}
-      <button type="submit">Speichern</button>
+
+      <button type="submit" class="btn-primary">Speichern</button>
+      <a href="{% url 'customer_list' %}"><button type="button" class="btn-secondary">Abbrechen</button></a>
     </form>
   </div>
 </body>
