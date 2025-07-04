@@ -6,17 +6,20 @@
   <style>
     body { font-family: Arial, sans-serif; background: #f7f7f7; }
     .container { background: #eee; padding:20px; margin:40px auto; width: 90%; max-width: 800px; }
-    .search { margin-bottom: 15px; }
-    .search input { padding: 8px; width: 200px; margin-right: 5px; border:1px solid #ccc; }
-    .search button { padding: 8px 12px; }
-    table { width:100%; border-collapse:collapse; margin-top:10px; }
-    tr:nth-child(odd)  { background:#ddd; }
-    tr:nth-child(even) { background:#ccc; }
-    th, td { padding:12px; text-align:left; }
-    button { border:none; padding:8px 16px; font-family:Arial; margin:4px; }
+    .search { margin-bottom: 15px; display: flex; gap: 5px; }
+    .search input { padding: 8px; flex: 1; border:1px solid #ccc; background: #fff; }
+    .search button { padding: 8px 12px; border: none; font-family: Arial; cursor: pointer; }
+    .search button:hover { opacity: 0.9; }
     .btn-primary   { background:#007bff; color:#fff; }
     .btn-secondary { background:#6c757d; color:#fff; }
     .btn-danger    { background:#343a40; color:#fff; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    th, td { padding:12px; text-align:left; }
+    tr:nth-child(odd)  { background:#ddd; }
+    tr:nth-child(even) { background:#ccc; }
+    .actions button { margin-right: 4px; border:none; padding:8px 16px; font-family:Arial; cursor:pointer; }
+    .actions a { text-decoration: none; }
+    .actions button:hover { opacity: 0.9; }
   </style>
 </head>
 <body>
@@ -28,9 +31,9 @@
       <input type="text" name="q"
              placeholder="Suche nach Name oder Nr."
              value="{{ q }}" />
-      <button type="submit">Suchen</button>
+      <button type="submit" class="btn-primary">Suchen</button>
       <a href="{% url 'customer_list' %}">
-        <button type="button">Zurücksetzen</button>
+        <button type="button" class="btn-secondary">Zurücksetzen</button>
       </a>
     </form>
 
@@ -41,32 +44,35 @@
 
     <!-- Tabelle -->
     <table>
-      <tr>
-        <th>Name</th>
-        <th>Kundennr.</th>
-        <th>Aktion</th>
-      </tr>
-      {% for c in customers %}
-      <tr>
-        <td>{{ c.last_name }}, {{ c.first_name }}</td>
-        <td>{{ c.customer_number }}</td>
-        <td>
-          <a href="{% url 'customer_detail' c.pk %}">
-            <button class="btn-secondary">Profil</button>
-          </a>
-          {% if c.security_level != 'none' %}
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Kundennr.</th>
+          <th>Aktion</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in customers %}
+        <tr>
+          <td>{{ c.last_name }}, {{ c.first_name }}</td>
+          <td>{{ c.customer_number }}</td>
+          <td class="actions">
+            <a href="{% url 'customer_detail' c.pk %}">
+              <button class="btn-secondary">Profil</button>
+            </a>
+            {% if c.security_level != 'none' %}
             <a href="{% url 'customer_security' c.pk %}" target="_blank">
               <button class="btn-secondary">Prüfung</button>
             </a>
-          {% endif %}
-          <a href="{% url 'customer_delete' c.pk %}">
-            <button class="btn-danger">Löschen</button>
-          </a>
-        </td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="3">Keine Kunden gefunden.</td></tr>
-      {% endfor %}
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3">Keine Kunden gefunden.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
 
   </div>
