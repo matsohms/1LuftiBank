@@ -1,9 +1,39 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Löschen</title>
-<style>body{font-family:Arial;} .container{width:400px;margin:40px auto;background:#f8d7da;padding:20px;}</style></head><body>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Kunde löschen</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7f7; }
+    .container { background: #eee; padding:20px; margin:40px auto; width:90%; max-width:500px; }
+    .warning { background:#8B0000; color:#fff; padding:15px; margin-bottom:20px; }
+    input { width:100%; padding:8px; margin-bottom:15px; border:1px solid #ccc; }
+    button { border:none; padding:8px 16px; font-family:Arial; margin-right:10px; }
+    .btn-danger { background:#8B0000; color:#fff; }
+    .btn-secondary { background:#6c757d; color:#fff; }
+  </style>
+</head>
+<body>
   <div class="container">
-    <h1>Kunde löschen?</h1>
-    <p>Möchten Sie {{ customer }} wirklich löschen?</p>
-    <form method="post">{% csrf_token %}<button type="submit">Ja, löschen</button></form>
-    <a href="{% url 'customer_list' %}">Abbrechen</a>
+    <h1>Kunde löschen</h1>
+    <div class="warning">
+      <strong>Achtung!</strong><br>
+      Durch Löschen des Kunden werden <u>alle</u> Konten und Zugänge unwiderruflich entfernt.
+    </div>
+    <p>Bitte geben Sie zur Bestätigung exact folgenden Text ein:</p>
+    <p><code>"{{ expected }}"</code></p>
+    {% if messages %}
+      {% for m in messages %}
+        <div style="color: red;">{{ m }}</div>
+      {% endfor %}
+    {% endif %}
+    <form method="post">{% csrf_token %}
+      <input type="text" name="confirm_input" placeholder='Geben Sie bitte genau "{{ expected }}" ein' required>
+      <button type="submit" class="btn-danger">Weiter</button>
+      <a href="{% url 'customer_detail' customer.pk %}">
+        <button type="button" class="btn-secondary">Abbrechen</button>
+      </a>
+    </form>
   </div>
-</body></html>
+</body>
+</html>
