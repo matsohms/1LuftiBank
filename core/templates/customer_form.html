@@ -1,19 +1,33 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <title>Kunde hinzufügen</title>
-  <style>
-    input, select { display: block; width: 300px; padding: 8px; margin-bottom: 12px; }
-    label { font-weight: bold; }
-    button { padding: 8px 16px; }
-  </style>
-</head>
+<head><meta charset="UTF-8"><title>Kunde hinzufügen</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#f0f0f0; }
+  .container { background:#ddd; padding:20px; width:600px; margin:40px auto; }
+  .row { display:flex; gap:10px; }
+  .row input { flex:1; background:#fff; border:none; padding:8px; }
+  label { flex:1; padding-top:10px; }
+  button { margin-top:10px; padding:8px 16px; }
+</style></head>
 <body>
-  <h1>Kunde hinzufügen</h1>
-  <form method="post">{% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Kunde hinzufügen</button>
-  </form>
+  <div class="container">
+    <h1>Kunde hinzufügen</h1>
+    <form method="post">{% csrf_token %}
+      <div class="row"><label>Vorname</label>{{ form.first_name }}</div>
+      <div class="row"><label>Nachname</label>{{ form.last_name }}</div>
+      <div class="row"><label>Weitere Vornamen</label>{{ form.middle_names }}</div>
+      <div class="row"><label>Straße</label>{{ form.address_line1 }}<label>Hausnummer</label>{{ form.house_number }}</div>
+      <div class="row"><label>PLZ</label>{{ form.postal_code }}<label>Ort</label>{{ form.city }}</div>
+      <div class="row"><label>Adresszusatz</label>{{ form.address_extra }}</div>
+      <div class="row"><label>Geburtsdatum</label>{{ form.birth_date }}</div>
+      <div class="row"><label>Telefon</label>{{ form.phone }}<label>E-Mail</label>{{ form.email }}</div>
+      <div class="row"><label>Passnummer</label>{{ form.passport_number }}</div>
+      <div class="row"><label>Sicherheitsfrage aktiv</label>{{ form.security_enabled }}</div>
+      {% if form.security_enabled.value %}
+      <div class="row"><label>Frage</label>{{ form.security_question }}<label>Antwort</label>{{ form.security_answer }}</div>
+      {% endif %}
+      <button type="submit">Speichern</button>
+    </form>
+  </div>
 </body>
 </html>
