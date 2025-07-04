@@ -1,15 +1,10 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <title>Admin Dashboard</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; }
-    .button { display: inline-block; padding: 10px 20px; margin: 10px; background: #007BFF; color: white; text-decoration: none; border-radius: 4px; }
-  </style>
-</head>
+<head><meta charset="UTF-8"><title>Dashboard</title></head>
 <body>
-  <h1>Admin Dashboard</h1>
-  <a href="{% url 'customer_list' %}" class="button">👥 Kundenübersicht</a>
+  <div class="container">
+    <h1>Dashboard</h1>
+    <a href="{% url 'customer_list' %}"><button>Kundenübersicht</button></a>
+  </div>
 </body>
 </html>
