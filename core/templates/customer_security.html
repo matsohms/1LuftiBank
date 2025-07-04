@@ -1,0 +1,13 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Sicherheitsprüfung</title>
+<style>body{font-family:Arial;} .container{width:400px;margin:40px auto;background:#eef;padding:20px;}input{width:100%;padding:8px;margin:8px 0;border:none;background:#fff;}button{padding:8px 16px;}</style></head><body>
+  <div class="container">
+    <h1>Sicherheitsfrage</h1>
+    <p>{{ customer.get_security_question_display }}</p>
+    <form method="post">{% csrf_token %}<input name="security_answer" placeholder="Antwort">
+      <button type="submit">Überprüfen</button>
+    </form>
+    {% if correct == True %}<p style="color:green;">Richtig!</p>
+    {% elif correct == False %}<p style="color:red;">Falsch!</p>{% endif %}
+    <a href="{% url 'customer_detail' customer.pk %}">Zurück</a>
+  </div>
+</body></html>
