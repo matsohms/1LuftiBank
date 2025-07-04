@@ -1,8 +1,9 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
-# Lade Umgebungsvariablen
+# Umgebungsvariablen laden
 BASE_DIR = Path(__file__).resolve().parent.parent
 env_file = BASE_DIR / '.env'
 if env_file.exists():
@@ -10,8 +11,6 @@ if env_file.exists():
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
-
-# Erlaube alle Hosts im Debug-Modus
 ALLOWED_HOSTS = ['*'] if DEBUG else os.getenv('ALLOWED_HOSTS', '').split(',')
 
 INSTALLED_APPS = [
@@ -40,12 +39,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'banking_portal.wsgi.application'
 
-# Datenbankkonfiguration: SQLite Default
+# ---- Neuer DATABASES-Block für externe Postgres ----
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL'),
+        conn_max_age=600,
+        ssl_require=not DEBUG
+    )
 }
 
 STATIC_URL = '/static/'
