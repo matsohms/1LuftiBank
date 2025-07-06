@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8"><title>PIN geändert</title></head>
+<body style="font-family:Arial;background:#f7f7f7;">
+  <div style="background:#eee;padding:20px;margin:40px auto;width:90%;max-width:400px;">
+    <h1>Neue PIN:</h1>
+    <p style="font-size:1.5em;">{{ new_pin }}</p>
+    <a href="{% url 'customer_detail' customer.pk %}">
+      <button style="padding:8px 16px;">Zurück zum Kundenprofil</button>
+    </a>
+  </div>
+</body>
+</html>
