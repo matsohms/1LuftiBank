@@ -52,4 +52,16 @@ urlpatterns = [
         customer_security,
         name='customer_security'
     ),
+
+        # Konto bearbeiten und PIN-Änderung
+    path(
+        'admin/customers/<int:customer_pk>/accounts/<int:account_pk>/edit/',
+        account_edit,
+        name='account_edit'
+    ),
+    path(
+        'admin/customers/<int:customer_pk>/accounts/<int:account_pk>/pin/',
+        account_pin_change,
+        name='account_pin_change'
+    ),
 ]
