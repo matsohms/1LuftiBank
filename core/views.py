@@ -1,3 +1,8 @@
+import io
+import base64
+import qrcode
+import pyotp
+from django.shortcuts import render, redirect, get_object_or_404
 from django.shortcuts import render, redirect, get_object_or_404
 import os, pyotp
 from .forms import (
@@ -9,6 +14,9 @@ from .forms import (
 from .models import Customer, Account
 from django.db.models import Q
 from django.contrib import messages
+from .models import Customer, Account
+from .forms import AccountSettingsForm, AccountTOTPForm
+
 
 # ——————————————————————————————————————————————————————————————
 # Helfer-Decorator für Admin-Schutz
