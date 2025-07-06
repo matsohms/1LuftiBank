@@ -126,18 +126,26 @@ def customer_detail(request, pk):
 @require_admin
 def customer_delete(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
-    expected = f'kunde {customer.customer_number} löschen'
+    # Erwarteter Text (noch mit Großbuchstaben für die Anzeige)
+    expected = f'Kunde {customer.customer_number} löschen'
+    # Für den Vergleich in Kleinbuchstaben
+    expected_lower = expected.lower()
+
     if request.method == 'POST':
         confirm = request.POST.get('confirm_input', '').strip().lower()
-        if confirm == expected:
+        if confirm == expected_lower:
             customer.delete()
-            messages.success(request, f'Kunde {customer.customer_number} gelöscht.')
+            messages.success(request, f'Kunde {customer.customer_number} wurde gelöscht.')
             return redirect('customer_list')
         else:
-            messages.error(request, f'Bitte genau "{expected}" eingeben.')
+            messages.error(
+                request,
+                f'Bitte genau "{expected}" eingeben.'
+            )
+
     return render(request, 'customer_confirm_delete.html', {
         'customer': customer,
-        'expected': expected
+        'expected': expected  # bleibt mit Großbuchstaben für die Anzeige
     })
 
 # ——————————————————————————————————————————————————————————————
