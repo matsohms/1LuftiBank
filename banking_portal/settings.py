@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import dj_database_url
 
 # ——————————————————————————————————————————————————————————————
-#  Basis-Pfade und Umgebungsvariablen
+# Basis-Pfade und Umgebungsvariablen
 # ——————————————————————————————————————————————————————————————
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -14,15 +14,14 @@ if env_file.exists():
     load_dotenv(env_file)
 
 # ——————————————————————————————————————————————————————————————
-#  Sicherheits- und Debug-Einstellungen
+# Sicherheits- und Debug-Einstellungen
 # ——————————————————————————————————————————————————————————————
 SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
 DEBUG      = os.getenv('DEBUG', 'True') == 'True'
-
 ALLOWED_HOSTS = ['*'] if DEBUG else os.getenv('ALLOWED_HOSTS', '').split(',')
 
 # ——————————————————————————————————————————————————————————————
-#  Apps & Middleware
+# Apps & Middleware
 # ——————————————————————————————————————————————————————————————
 INSTALLED_APPS = [
     'django.contrib.sessions',
@@ -51,13 +50,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'banking_portal.wsgi.application'
 
 # ——————————————————————————————————————————————————————————————
-#  Datenbank-Konfiguration (externe PostgreSQL via DATABASE_URL)
+# Datenbank-Konfiguration (externe PostgreSQL via DATABASE_URL)
 # ——————————————————————————————————————————————————————————————
 DB_URL = os.getenv('DATABASE_URL')
 if not DB_URL:
     raise RuntimeError(
-        "DATABASE_URL ist nicht gesetzt! "
-        "Bitte in den ENV-Variablen konfigurieren."
+        "DATABASE_URL ist nicht gesetzt! Bitte in den ENV-Variablen konfigurieren."
     )
 
 DATABASES = {
@@ -69,6 +67,6 @@ DATABASES = {
 }
 
 # ——————————————————————————————————————————————————————————————
-#  Statische Dateien
+# Statische Dateien
 # ——————————————————————————————————————————————————————————————
 STATIC_URL = '/static/'
