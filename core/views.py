@@ -1,21 +1,23 @@
 import io
 import base64
+import os
+import random
+
 import qrcode
 import pyotp
+
+from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
-from django.shortcuts import render, redirect, get_object_or_404
-import os, pyotp
+from django.db.models import Q
+from django.contrib import messages
+
+from .models import Customer, Account, SECURITY_QUESTIONS
 from .forms import (
     LoginForm,
     CustomerForm,
     AccountSettingsForm,
     AccountTOTPForm
 )
-from .models import Customer, Account
-from django.db.models import Q
-from django.contrib import messages
-from .models import Customer, Account
-from .forms import AccountSettingsForm, AccountTOTPForm
 
 
 # ——————————————————————————————————————————————————————————————
@@ -198,13 +200,40 @@ def account_create_step1(request, customer_pk):
     })
 
 @require_admin
-def account_create_step2(request, customer_pk):
-    acc = get_object_or_404(Account, id=request.session.get('new_account_id'))
-    uri = pyotp.TOTP(acc.totp_secret).provisioning_uri(name=acc.iban, issuer_name='BankingPortal')
+def account_create_step2(request, customer_pk, account_pk):
+    """
+    Zeigt den TOTP-QR-Code für das neu angelegte Konto an und verifiziert den
+    vom Admin eingegebenen TOTP-Code, bevor wir zu Step 3 weitergehen.
+    """
+    account = get_object_or_404(Account, pk=account_pk, customer__pk=customer_pk)
+
+    # Erzeuge Provisioning-URI und daraus ein QR-Bild
+    totp = pyotp.TOTP(account.totp_secret)
+    uri  = totp.provisioning_uri(
+        name=account.account_number,
+        issuer_name="LuftiBank"
+    )
+    img = qrcode.make(uri)
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    qr_b64 = base64.b64encode(buf.getvalue()).decode()  # Base64-String für <img>
+
+    error = None
     if request.method == 'POST':
-        return redirect('account_create_step3', customer_pk=customer_pk)
+        code = request.POST.get('totp_code', '').strip()
+        if totp.verify(code):
+            return redirect(
+                'account_create_step3',
+                customer_pk=customer_pk,
+                account_pk=account_pk
+            )
+        else:
+            error = 'Ungültiger TOTP-Code. Bitte erneut scannen und testen.'
+
     return render(request, 'account_step2.html', {
-        'account': acc, 'provisioning_uri': uri
+        'account': account,
+        'qr_code': qr_b64,
+        'error':    error
     })
 
 @require_admin
