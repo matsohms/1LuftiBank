@@ -44,3 +44,35 @@ class Customer(models.Model):
 
     def __str__(self):
         return f"{self.last_name}, {self.first_name}"
+
+def gen_account_number():
+    return ''.join(str(random.randint(0,9)) for _ in range(8))
+
+def gen_iban(acc):
+    return f"OH82 7827 {acc[:4]} {acc[4:8]}"
+
+class Account(models.Model):
+    customer        = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='accounts')
+    account_number  = models.CharField(max_length=8, unique=True, default=gen_account_number)
+    iban            = models.CharField(max_length=34, unique=True, blank=True)
+    pin             = models.CharField(max_length=5, blank=True)
+    totp_secret     = models.CharField(max_length=32, blank=True)
+    account_model   = models.CharField(max_length=100)
+    max_balance     = models.DecimalField(max_digits=14, decimal_places=2)
+    free_up_to      = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
+    cost_within     = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    free_above      = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
+    cost_above      = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    created_at      = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.iban:
+            self.iban = gen_iban(self.account_number)
+        if not self.pin:
+            self.pin = ''.join(str(random.randint(0,9)) for _ in range(5))
+        if not self.totp_secret:
+            self.totp_secret = pyotp.random_base32()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.account_number} ({self.account_model})"
