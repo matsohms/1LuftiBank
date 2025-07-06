@@ -12,6 +12,8 @@ from .views import (
     account_create_step1,
     account_create_step2,
     account_create_step3,
+    account_edit,
+    account_pin_change
 )
 
 urlpatterns = [
