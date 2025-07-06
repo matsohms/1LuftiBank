@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8"><title>Neues Konto – Schritt 3</title></head>
+<body>
+  <h1>TOTP-Prüfung</h1>
+  <form method="post">{% csrf_token %}
+    {{ form.totp_check.label_tag }}<br>
+    {{ form.totp_check }}<br><br>
+    <button>Abschließen</button>
+  </form>
+  <a href="{% url 'customer_detail' account.customer.pk %}">Abbrechen</a>
+</body>
+</html>
