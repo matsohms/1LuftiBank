@@ -10,7 +10,7 @@ from .views import (
     customer_delete,
     customer_security,
     account_create_step1,
-    account_create_step2,
+    account_create_step2,  # QR-Code-Generation passiert in dieser View
     account_create_step3,
     account_edit,
     account_pin_change
@@ -39,7 +39,7 @@ urlpatterns = [
     ),
     path(
         'admin/customers/<int:customer_pk>/accounts/add/step2/',
-        account_create_step2,
+        account_create_step2,  # Hier wird der QR-Code erzeugt und angezeigt
         name='account_create_step2'
     ),
     path(
@@ -55,7 +55,7 @@ urlpatterns = [
         name='customer_security'
     ),
 
-        # Konto bearbeiten und PIN-Änderung
+    # Konto bearbeiten und PIN-Änderung
     path(
         'admin/customers/<int:customer_pk>/accounts/<int:account_pk>/edit/',
         account_edit,
