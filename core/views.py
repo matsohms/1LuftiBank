@@ -215,3 +215,47 @@ def account_create_step3(request, customer_pk):
     return render(request, 'account_step3.html', {
         'form': form, 'account': acc
     })
+
+class AccountForm(ModelForm):
+    class Meta:
+        model = Account
+        fields = [
+            'account_model',
+            'max_balance','free_up_to','cost_within',
+            'free_above','cost_above'
+        ]
+
+@require_admin
+def account_edit(request, customer_pk, account_pk):
+    account = get_object_or_404(Account, pk=account_pk, customer__pk=customer_pk)
+    if request.method == 'POST':
+        form = AccountForm(request.POST, instance=account)
+        if form.is_valid():
+            form.save()
+            return redirect('customer_detail', pk=customer_pk)
+    else:
+        form = AccountForm(instance=account)
+    return render(request, 'account_form.html', {
+        'form': form,
+        'customer': account.customer,
+        'edit': True
+    })
+
+# ------------- PIN ändern -------------
+@require_admin
+def account_pin_change(request, customer_pk, account_pk):
+    account = get_object_or_404(Account, pk=account_pk, customer__pk=customer_pk)
+    if request.method == 'POST':
+        # einfache Neugenerierung
+        new_pin = ''.join(str(random.randint(0,9)) for _ in range(5))
+        account.pin = new_pin
+        account.save()
+        return render(request, 'account_pin_changed.html', {
+            'customer': account.customer,
+            'account': account,
+            'new_pin': new_pin
+        })
+    return render(request, 'account_pin_confirm.html', {
+        'customer': account.customer,
+        'account': account
+    })
