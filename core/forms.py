@@ -8,23 +8,36 @@ class LoginForm(forms.Form):
 
 class CustomerForm(forms.ModelForm):
     SECURITY_LEVELS = [
-        ('none', 'Keine'),
+        ('none',     'Keine'),
         ('question', 'Sicherheitsfrage'),
-        ('pin', 'PIN'),
+        ('pin',      'PIN'),
     ]
-    security_level = forms.ChoiceField(label='Erweiterte Sicherheitsstufe',
-        choices=SECURITY_LEVELS, required=False)
-    security_response = forms.CharField(label='Antwort / PIN', max_length=100, required=True)
+
+    security_level    = forms.ChoiceField(
+        label='Erweiterte Sicherheitsstufe',
+        choices=SECURITY_LEVELS,
+        required=False
+    )
+    security_question = forms.ChoiceField(
+        label='Sicherheitsfrage',
+        choices=SECURITY_QUESTIONS,
+        required=False
+    )
+    security_answer   = forms.CharField(
+        label='Antwort / PIN',
+        max_length=100,
+        required=False,  # wir validieren im View je nach Level
+        widget=forms.PasswordInput
+    )
 
     class Meta:
         model = Customer
         fields = [
-            'first_name','last_name','middle_names',
-            'address_line1','house_number','postal_code','city','address_extra',
-            'birth_date','phone','email','passport_number',
-            'security_level','security_question','security_answer'
+            'first_name', 'middle_names', 'last_name',
+            'address_line1', 'house_number', 'postal_code', 'city', 'address_extra',
+            'birth_date', 'phone', 'email', 'passport_number',
+            'security_level', 'security_question', 'security_answer'
         ]
         widgets = {
-            'birth_date': forms.DateInput(attrs={'type':'date'}),
-            'security_question': forms.Select(choices=SECURITY_QUESTIONS),
+            'birth_date': forms.DateInput(attrs={'type': 'date'}),
         }
