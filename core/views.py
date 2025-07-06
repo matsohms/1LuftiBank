@@ -109,10 +109,29 @@ def customer_delete(request, pk):
 
 # Sicherheitsprüfung
 def customer_security(request, pk):
-    if not request.session.get('is_admin'): return redirect('login')
+    # Schutz: Nur eingeloggte Admins
+    if not request.session.get('is_admin'):
+        return redirect('login')
+
     customer = get_object_or_404(Customer, pk=pk)
-    correct = None
+    result = None  # wird 'correct' oder 'incorrect'
+
     if request.method == 'POST':
-        answer = request.POST.get('security_answer')
-        correct = (answer == customer.security_answer)
-    return render(request, 'customer_security.html', {'customer': customer, 'correct': correct})
+        answer = request.POST.get('security_answer', '').strip()
+        # Unterscheide nach Typ
+        if customer.security_level == 'pin':
+            # Pin war als security_answer im Model gespeichert
+            if answer == customer.security_answer:
+                result = 'correct'
+            else:
+                result = 'incorrect'
+        elif customer.security_level == 'question':
+            if answer.lower() == customer.security_answer.lower():
+                result = 'correct'
+            else:
+                result = 'incorrect'
+
+    return render(request, 'customer_security.html', {
+        'customer': customer,
+        'result':   result
+    })
