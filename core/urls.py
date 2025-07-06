@@ -22,6 +22,14 @@ urlpatterns = [
     path('admin/customers/<int:pk>/edit/', customer_edit, name='customer_edit'),
     path('admin/customers/<int:pk>/delete/', customer_delete, name='customer_delete'),
 
+    # Konto-Erstellung (3 Schritte)
+    path('admin/customers/<int:customer_pk>/accounts/add/step1/',
+         account_create_step1, name='account_create_step1'),
+    path('admin/customers/<int:customer_pk>/accounts/add/step2/',
+         account_create_step2, name='account_create_step2'),
+    path('admin/customers/<int:customer_pk>/accounts/add/step3/',
+         account_create_step3, name='account_create_step3'),
+
     # Sicherheitsprüfung
     path('admin/customers/<int:pk>/security/', customer_security, name='customer_security'),
 ]
