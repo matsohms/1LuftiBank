@@ -1,16 +1,47 @@
 <!DOCTYPE html>
 <html lang="de">
-<head><meta charset="UTF-8"><title>{% if edit %}Konto bearbeiten{% else %}Konto hinzufügen{% endif %}</title></head>
-<body style="font-family:Arial;background:#f7f7f7;">
-  <div style="background:#eee;padding:20px;margin:40px auto;width:90%;max-width:600px;">
-    <h1>{% if edit %}Konto bearbeiten{% else %}Konto hinzufügen{% endif %}</h1>
-    <form method="post">{% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit" style="padding:8px 16px;">{% if edit %}Speichern{% else %}Weiter{% endif %}</button>
-      <a href="{% url 'customer_detail' customer.pk %}">
-        <button type="button" style="padding:8px 16px;">Abbrechen</button>
-      </a>
+<head>
+  <meta charset="UTF-8">
+  <title>{{ edit|yesno:"Konto bearbeiten,Konto erstellen" }}</title>
+</head>
+<body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#f7f7f7;">
+  <div style="background:#eee;padding:20px;margin:40px auto;width:90%;max-width:600px;box-sizing:border-box;">
+    <h1 style="margin-top:0;">{{ edit|yesno:"Konto bearbeiten,Konto erstellen" }}</h1>
+    <form method="post" style="display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      
+      <label for="id_account_model">Kontomodell</label>
+      {{ form.account_model }}
+
+      <label for="id_max_balance">Maximale Auslastung</label>
+      {{ form.max_balance }}
+
+      <label for="id_free_up_to">Kostenlose Überweisungen bis</label>
+      {{ form.free_up_to }}
+
+      <label for="id_cost_within">Kosten pro Überweisung (bis)</label>
+      {{ form.cost_within }}
+
+      <label for="id_free_above">Kostenlose Überweisungen ab</label>
+      {{ form.free_above }}
+
+      <label for="id_cost_above">Kosten pro Überweisung (ab)</label>
+      {{ form.cost_above }}
+
+      <button type="submit"
+        style="grid-column:1/-1;padding:10px 16px;font-family:Arial,sans-serif;border:none;cursor:pointer;background:#007bff;color:#fff;">
+        Weiter
+      </button>
     </form>
+    <p style="margin-top:16px;text-align:right;">
+      <a href="{% url 'customer_detail' customer.pk %}">
+        <button type="button"
+          style="padding:8px 16px;font-family:Arial,sans-serif;border:none;cursor:pointer;background:#6c757d;color:#fff;">
+          Abbrechen
+        </button>
+      </a>
+    </p>
   </div>
 </body>
 </html>
