@@ -1,17 +1,53 @@
 <!DOCTYPE html>
 <html lang="de">
-<head><meta charset="UTF-8"><title>Neues Konto – Schritt 2</title></head>
+<head>
+  <meta charset="UTF-8">
+  <title>Konto-Erstellung – Schritt 2: TOTP einrichten</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7f7; }
+    .container {
+      background: #eee;
+      padding: 20px;
+      margin: 40px auto;
+      width: 90%;
+      max-width: 500px;
+    }
+    img { display: block; margin: 0 auto 20px; }
+    .error { color: #c00; margin-bottom: 10px; }
+    form input { padding: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+    form button { padding: 8px 16px; }
+  </style>
+</head>
 <body>
-  <h1>Konto-Daten</h1>
-  <p><strong>Kontonummer:</strong> {{ account.account_number }}</p>
-  <p><strong>IBAN:</strong> {{ account.iban }}</p>
-  <p><strong>PIN:</strong> {{ account.pin }}</p>
-  <p><strong>TOTP-URI (QR-Code):</strong><br>
-    <textarea rows="3" readonly>{{ provisioning_uri }}</textarea>
-  </p>
-  <form method="post">{% csrf_token %}
-    <button>Weiter</button>
-  </form>
-  <a href="{% url 'customer_detail' account.customer.pk %}">Abbrechen</a>
+  <div class="container">
+    <h1>Schritt 2: TOTP einrichten</h1>
+
+    <p>Scanne folgenden QR-Code mit deiner TOTP-App (z. B. Google Authenticator):</p>
+    <img src="data:image/png;base64,{{ qr_code }}" alt="QR-Code">
+
+    <p>Gib danach den aktuellen Code aus deiner App ein:</p>
+
+    {% if error %}
+      <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <input
+        type="text"
+        name="totp_code"
+        placeholder="TOTP-Code (6 Ziffern)"
+        maxlength="6"
+        required
+      />
+      <button type="submit">Weiter zu Schritt 3</button>
+    </form>
+
+    <p>
+      <a href="{% url 'customer_detail' account.customer.pk %}">
+        <button type="button">Abbrechen</button>
+      </a>
+    </p>
+  </div>
 </body>
 </html>
