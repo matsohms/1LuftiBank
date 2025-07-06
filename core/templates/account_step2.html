@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8"><title>Neues Konto – Schritt 2</title></head>
+<body>
+  <h1>Konto-Daten</h1>
+  <p><strong>Kontonummer:</strong> {{ account.account_number }}</p>
+  <p><strong>IBAN:</strong> {{ account.iban }}</p>
+  <p><strong>PIN:</strong> {{ account.pin }}</p>
+  <p><strong>TOTP-URI (QR-Code):</strong><br>
+    <textarea rows="3" readonly>{{ provisioning_uri }}</textarea>
+  </p>
+  <form method="post">{% csrf_token %}
+    <button>Weiter</button>
+  </form>
+  <a href="{% url 'customer_detail' account.customer.pk %}">Abbrechen</a>
+</body>
+</html>
