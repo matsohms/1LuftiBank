@@ -14,7 +14,7 @@ class CustomerForm(forms.ModelForm):
     ]
     security_level = forms.ChoiceField(label='Erweiterte Sicherheitsstufe',
         choices=SECURITY_LEVELS, required=False)
-    security_answer = forms.CharField(label='Antwort', required=False,
+    security_response = forms.CharField(label='Antwort / PIN', max_length=100, required=True)
         widget=forms.TextInput)
 
     class Meta:
