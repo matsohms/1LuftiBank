@@ -167,3 +167,47 @@ def customer_security(request, pk):
         'customer': customer,
         'result':   result
     })
+
+@require_admin
+def account_create_step1(request, customer_pk):
+    customer = get_object_or_404(Customer, pk=customer_pk)
+    if request.method == 'POST':
+        form = AccountSettingsForm(request.POST)
+        if form.is_valid():
+            acc = form.save(commit=False)
+            acc.customer = customer
+            acc.save()
+            request.session['new_account_id'] = acc.id
+            return redirect('account_create_step2', customer_pk=customer_pk)
+    else:
+        form = AccountSettingsForm()
+    return render(request, 'account_step1.html', {
+        'form': form, 'customer': customer
+    })
+
+@require_admin
+def account_create_step2(request, customer_pk):
+    acc = get_object_or_404(Account, id=request.session.get('new_account_id'))
+    uri = pyotp.TOTP(acc.totp_secret).provisioning_uri(name=acc.iban, issuer_name='BankingPortal')
+    if request.method == 'POST':
+        return redirect('account_create_step3', customer_pk=customer_pk)
+    return render(request, 'account_step2.html', {
+        'account': acc, 'provisioning_uri': uri
+    })
+
+@require_admin
+def account_create_step3(request, customer_pk):
+    acc = get_object_or_404(Account, id=request.session.get('new_account_id'))
+    if request.method == 'POST':
+        form = AccountTOTPForm(request.POST)
+        if form.is_valid():
+            code = form.cleaned_data['totp_check']
+            if pyotp.TOTP(acc.totp_secret).verify(code):
+                del request.session['new_account_id']
+                return redirect('customer_detail', pk=customer_pk)
+            form.add_error('totp_check', 'Ungültiger TOTP-Code.')
+    else:
+        form = AccountTOTPForm()
+    return render(request, 'account_step3.html', {
+        'form': form, 'account': acc
+    })
