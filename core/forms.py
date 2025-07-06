@@ -1,5 +1,5 @@
 from django import forms
-from .models import Customer, SECURITY_QUESTIONS
+from .models import Customer, SECURITY_QUESTIONS, Account
 
 class LoginForm(forms.Form):
     account_number = forms.CharField(label='Kontonummer', max_length=8)
