@@ -41,3 +41,22 @@ class CustomerForm(forms.ModelForm):
         widgets = {
             'birth_date': forms.DateInput(attrs={'type': 'date'}),
         }
+
+class AccountSettingsForm(forms.ModelForm):
+    class Meta:
+        model = Account
+        fields = [
+            'account_model', 'max_balance',
+            'free_up_to', 'cost_within',
+            'free_above', 'cost_above',
+        ]
+        widgets = {
+            'max_balance': forms.NumberInput(attrs={'step':'0.01'}),
+            'free_up_to':  forms.NumberInput(attrs={'step':'0.01'}),
+            'cost_within': forms.NumberInput(attrs={'step':'0.01'}),
+            'free_above':  forms.NumberInput(attrs={'step':'0.01'}),
+            'cost_above':  forms.NumberInput(attrs={'step':'0.01'}),
+        }
+
+class AccountTOTPForm(forms.Form):
+    totp_check = forms.CharField(label='TOTP-Code', max_length=6)
