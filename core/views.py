@@ -1,10 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.db.models import Q
 import os, pyotp
-
-from .forms import LoginForm, CustomerForm
-from .models import Customer
+from .forms import (
+    LoginForm,
+    CustomerForm,
+    AccountSettingsForm,
+    AccountTOTPForm
+)
+from .models import Customer, Account
+from django.db.models import Q
+from django.contrib import messages
 
 # ——————————————————————————————————————————————————————————————
 # Helfer-Decorator für Admin-Schutz
