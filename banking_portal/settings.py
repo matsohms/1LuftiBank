@@ -16,17 +16,24 @@ if env_file.exists():
 # ——————————————————————————————————————————————————————————————
 # Sicherheits- und Debug-Einstellungen
 # ——————————————————————————————————————————————————————————————
-SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
-DEBUG      = os.getenv('DEBUG', 'True') == 'True'
+SECRET_KEY   = os.getenv('SECRET_KEY', 'dev-secret-key')
+DEBUG        = os.getenv('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = ['*'] if DEBUG else os.getenv('ALLOWED_HOSTS', '').split(',')
 
 # ——————————————————————————————————————————————————————————————
 # Apps & Middleware
 # ——————————————————————————————————————————————————————————————
 INSTALLED_APPS = [
+    # Sessions, Messages, Staticfiles
     'django.contrib.sessions',
+    'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.messages', 
+
+    # Auth & ContentTypes (wichtig für Context Processors)
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+
+    # Eigene App
     'core',
 ]
 
@@ -40,6 +47,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'banking_portal.urls'
 
+# ——————————————————————————————————————————————————————————————
+# Templates & Context Processors
+# ——————————————————————————————————————————————————————————————
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -64,7 +74,7 @@ WSGI_APPLICATION = 'banking_portal.wsgi.application'
 DB_URL = os.getenv('DATABASE_URL')
 if not DB_URL:
     raise RuntimeError(
-        "DATABASE_URL ist nicht gesetzt! Bitte in den ENV-Variablen konfigurieren."
+        "DATABASE_URL ist nicht gesetzt! Bitte in den Environment-Variablen konfigurieren."
     )
 
 DATABASES = {
@@ -78,4 +88,5 @@ DATABASES = {
 # ——————————————————————————————————————————————————————————————
 # Statische Dateien
 # ——————————————————————————————————————————————————————————————
-STATIC_URL = '/static/'
+STATIC_URL  = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
