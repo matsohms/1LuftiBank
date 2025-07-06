@@ -1,10 +1,121 @@
 <!DOCTYPE html>
 <html lang="de">
-<head><meta charset="UTF-8"><title>Dashboard</title></head>
+<head>
+  <meta charset="UTF-8">
+  <title>Admin-Dashboard</title>
+  <style>
+    body {
+      margin: 0; padding: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+    }
+    .header {
+      background: #eee;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #ccc;
+    }
+    .header .bank-info {
+      font-size: 14px;
+    }
+    .header .bank-info div:first-child {
+      font-weight: bold;
+    }
+    .header .actions button {
+      padding: 8px 16px;
+      font-family: Arial;
+      border: none;
+      background: #6c757d;
+      color: #fff;
+      cursor: pointer;
+    }
+    .header .actions button:hover {
+      opacity: 0.9;
+    }
+    .content {
+      text-align: center;
+      margin: 60px auto;
+      max-width: 800px;
+    }
+    .balance-card {
+      background: #fff;
+      padding: 30px;
+      border: 1px solid #ccc;
+      font-size: 24px;
+      margin-bottom: 40px;
+      display: inline-block;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .balance-card .amount {
+      font-size: 36px;
+      font-weight: bold;
+    }
+    .tiles {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .tile {
+      background: #fff;
+      padding: 20px;
+      border: 1px solid #ccc;
+      flex: 1;
+      min-width: 200px;
+      text-align: center;
+    }
+    .tile h2 {
+      margin-top: 0;
+    }
+    .tile button {
+      padding: 10px 20px;
+      font-family: Arial;
+      border: none;
+      background: #007bff;
+      color: #fff;
+      cursor: pointer;
+    }
+    .tile button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
 <body>
-  <div class="container">
-    <h1>Dashboard</h1>
-    <a href="{% url 'customer_list' %}"><button>Kundenübersicht</button></a>
+  <div class="header">
+    <div class="bank-info">
+      <div>Bank IBAN: OH82 7827 9992 2889 2888 2892</div>
+      <div>Kundenberater: Max Mustermann</div>
+    </div>
+    <div class="actions">
+      <a href="{% url 'logout' %}">
+        <button>Logout</button>
+      </a>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="balance-card">
+      Aktueller Kontostand:<br>
+      <div class="amount">2.597.800.000,00 LUF</div>
+    </div>
+
+    <div class="tiles">
+      <div class="tile">
+        <h2>Kundenübersicht</h2>
+        <a href="{% url 'customer_list' %}">
+          <button>Zur Übersicht</button>
+        </a>
+      </div>
+      <div class="tile">
+        <h2>Neuen Kunden anlegen</h2>
+        <a href="{% url 'customer_create' %}">
+          <button>Erstellen</button>
+        </a>
+      </div>
+    </div>
   </div>
 </body>
 </html>
