@@ -4,23 +4,25 @@
   <meta charset="UTF-8">
   <title>Sicherheitsprüfung</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f7f7f7; }
-    .container { background: #eee; padding:20px; margin:40px auto; width:90%; max-width:600px; }
-    .row { margin-bottom:15px; }
-    input { width:100%; padding:8px; background:#fff; border:1px solid #ccc; }
-    button { border:none; padding:8px 16px; font-family:Arial; margin-right:10px; cursor:pointer; }
-    .btn-primary { background:#007bff; color:#fff; }
-    .btn-secondary { background:#6c757d; color:#fff; }
+    body { font-family: Arial; background:#f7f7f7; }
+    .container { background:#eee; padding:20px; margin:40px auto; width:90%; max-width:600px; }
+    h1 { margin-top:0; }
     .feedback { padding:10px; margin-bottom:15px; font-weight:bold; }
-    .feedback.correct   { background: #d4edda; color: #155724; }
-    .feedback.incorrect { background: #f8d7da; color: #721c24; }
+    .correct   { background:#d4edda; color:#155724; }
+    .incorrect { background:#f8d7da; color:#721c24; }
+    .row { margin-bottom:15px; }
+    label { display:block; margin-bottom:5px; }
+    input { width:100%; padding:8px; border:1px solid #ccc; background:#fff; }
+    button { padding:10px 20px; border:none; font-family:Arial; cursor:pointer; margin-right:10px; }
+    .btn-primary   { background:#007bff; color:#fff; }
+    .btn-secondary { background:#6c757d; color:#fff; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Sicherheitsprüfung</h1>
-    <p>Art: {{ customer.get_security_level_display }}</p>
 
+    <!-- Feedback nach Absenden -->
     {% if result == 'correct' %}
       <div class="feedback correct">Antwort ist korrekt!</div>
     {% elif result == 'incorrect' %}
@@ -28,8 +30,11 @@
     {% endif %}
 
     <form method="post">{% csrf_token %}
+      <!-- Frage nur bei Sicherheitsfrage -->
       {% if customer.security_level == 'question' %}
-        <div class="row"><strong>Frage:</strong> {{ customer.get_security_question_display }}</div>
+        <div class="row">
+          <strong>Frage:</strong> {{ customer.get_security_question_display }}
+        </div>
       {% endif %}
       <div class="row">
         <label for="id_security_answer">
