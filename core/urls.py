@@ -66,4 +66,9 @@ urlpatterns = [
         account_pin_change,
         name='account_pin_change'
     ),
+    path(
+        'admin/customers/<int:customer_pk>/accounts/<int:account_pk>/delete/',
+        account_delete,
+        name='account_delete'
+),
 ]
