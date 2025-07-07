@@ -70,5 +70,5 @@ urlpatterns = [
         'admin/customers/<int:customer_pk>/accounts/<int:account_pk>/delete/',
         account_delete,
         name='account_delete'
-),
+    ),
 ]
