@@ -297,3 +297,23 @@ def account_pin_change(request, customer_pk, account_pk):
         'customer': account.customer,
         'account': account
     })
+
+@require_admin
+def account_delete(request, customer_pk, account_pk):
+    account = get_object_or_404(Account, pk=account_pk, customer__pk=customer_pk)
+    expected = f'konto {account.account_number} löschen'
+    error = None
+
+    if request.method == 'POST':
+        inp = request.POST.get('confirm_input','').strip().lower()
+        if inp == expected:
+            account.delete()
+            messages.success(request, f'Konto {account.account_number} gelöscht.')
+            return redirect('customer_detail', pk=customer_pk)
+        else:
+            error = f'Bitte genau "{expected}" eingeben.'
+
+    return render(request, 'account_confirm_delete.html', {
+        'account': account,
+        'error': error
+    })
