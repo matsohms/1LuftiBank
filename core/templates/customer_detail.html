@@ -4,49 +4,65 @@
   <meta charset="UTF-8">
   <title>Kundenprofil</title>
   <style>
-    body { font-family: Arial; background:#f7f7f7; margin:0; padding:0; }
-    .container { background:#eee; padding:20px; margin:40px auto; width:90%; max-width:800px; }
-    h1 { margin-top:0; }
-    table { width:100%; border-collapse:collapse; margin-bottom:20px; }
-    th, td { padding:12px; text-align:left; }
-    tr:nth-child(odd)  { background:#ddd; }
-    tr:nth-child(even) { background:#ccc; }
-    .actions { margin-bottom:20px; }
-    .actions a { text-decoration:none; margin-right:10px; }
+    body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
+    .container { background: #eee; padding: 20px; margin: 40px auto; width: 90%; max-width: 800px; }
+    h1, h2 { margin-top: 0; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th, td { padding: 12px; text-align: left; }
+    tr:nth-child(odd)  { background: #ddd; }
+    tr:nth-child(even) { background: #ccc; }
+    .actions { margin-bottom: 20px; }
+    .actions a { text-decoration: none; margin-right: 10px; }
     .actions button {
-      padding:8px 16px; border:none; font-family:Arial; cursor:pointer;
+      padding: 8px 16px; border: none; font-family: Arial; cursor: pointer;
     }
-    .btn-primary   { background:#007bff; color:#fff; }
-    .btn-secondary { background:#6c757d; color:#fff; }
-    .btn-danger    { background:#343a40; color:#fff; }
-    .accounts-table { margin-top:30px; }
-    .accounts-table th, .accounts-table td { padding:10px; }
-    .accounts-table tr:nth-child(odd)  { background:#f0f0f0; }
-    .accounts-table tr:nth-child(even) { background:#e0e0e0; }
+    .btn-primary   { background: #007bff; color: #fff; }
+    .btn-secondary { background: #6c757d; color: #fff; }
+    .btn-danger    { background: #343a40; color: #fff; }
+    .accounts-table { margin-top: 30px; }
+    .accounts-table th, .accounts-table td { padding: 10px; }
+    .accounts-table tr:nth-child(odd)  { background: #f0f0f0; }
+    .accounts-table tr:nth-child(even) { background: #e0e0e0; }
   </style>
 </head>
 <body>
   <div class="container">
     <!-- Kunde -->
-    <h1>{{ customer.first_name }}{% if customer.middle_names %} {{ customer.middle_names }}{% endif %} {{ customer.last_name }}</h1>
+    <h1>
+      {{ customer.first_name }}
+      {% if customer.middle_names %} {{ customer.middle_names }}{% endif %}
+      {{ customer.last_name }}
+    </h1>
     <table>
-      <tr><th>Kundennr.</th><td>{{ customer.customer_number }}</td></tr>
-      <tr><th>Erstellt am</th><td>{{ customer.created_at|date:"d.m.Y H:i" }}</td></tr>
+      <tr><th>Kundennr.</th>     <td>{{ customer.customer_number }}</td></tr>
+      <tr><th>Erstellt am</th>   <td>{{ customer.created_at|date:"d.m.Y H:i" }}</td></tr>
       <tr><th>Adresse</th>
         <td>
           {{ customer.address_line1 }} {{ customer.house_number }}<br>
-          {{ customer.postal_code }} {{ customer.city }}{% if customer.address_extra %}<br>{{ customer.address_extra }}{% endif %}
+          {{ customer.postal_code }} {{ customer.city }}
+          {% if customer.address_extra %}<br>{{ customer.address_extra }}{% endif %}
         </td>
       </tr>
-      <tr><th>Geburtsdatum</th><td>{{ customer.birth_date }}</td></tr>
-      <tr><th>Telefon</th><td>{{ customer.phone }}</td></tr>
-      <tr><th>E-Mail</th><td>{{ customer.email }}</td></tr>
+      <tr><th>Geburtsdatum</th>  <td>{{ customer.birth_date|date:"d.m.Y" }}</td></tr>
+      <tr><th>Telefon</th>       <td>{{ customer.phone }}</td></tr>
+      <tr><th>E-Mail</th>        <td>{{ customer.email }}</td></tr>
       {% if customer.passport_number %}
-      <tr><th>Passnummer</th><td>{{ customer.passport_number }}</td></tr>
+      <tr><th>Passnummer</th>    <td>{{ customer.passport_number }}</td></tr>
       {% endif %}
-      <tr><th>Erweiterte Sicherheit</th><td>{{ customer.get_security_level_display }}</td></tr>
+      <tr><th>Erweiterte Sicherheit</th>
+        <td>{{ customer.get_security_level_display }}</td>
+      </tr>
       {% if customer.security_level == 'question' %}
-      <tr><th>Frage</th><td>{{ customer.get_security_question_display }}</td></tr>
+      <tr><th>Frage</th>         <td>{{ customer.get_security_question_display }}</td></tr>
+      {% endif %}
+      {% if customer.security_level != 'none' %}
+      <tr><th>Sicherheitsprüfung</th>
+        <td>
+          <a href="{% url 'customer_security' customer.pk %}">
+            <button class="btn-secondary">Prüfung</button>
+          </a>
+        </td>
+      </tr>
       {% endif %}
     </table>
 
@@ -94,6 +110,9 @@
             <a href="{% url 'account_pin_change' customer.pk account.pk %}">
               <button class="btn-secondary">PIN ändern</button>
             </a>
+            <a href="{% url 'account_delete' customer.pk account.pk %}">
+              <button class="btn-danger">Konto löschen</button>
+            </a>
           </td>
         </tr>
         {% empty %}
@@ -101,7 +120,7 @@
         {% endfor %}
       </tbody>
     </table>
-
   </div>
 </body>
 </html>
+
