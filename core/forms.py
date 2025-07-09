@@ -6,19 +6,25 @@ class LoginForm(forms.Form):
         label='Kontonummer',
         max_length=10,
         min_length=10,
-        widget=forms.TextInput(attrs={'placeholder': '10-stellige Nummer'}),
+        widget=forms.TextInput(attrs={
+            'placeholder': '10-stellige Nummer',
+        }),
     )
     pin = forms.CharField(
         label='PIN',
-        widget=forms.PasswordInput(attrs={'placeholder': '5-stellige PIN'}),
         max_length=5,
         min_length=5,
+        widget=forms.PasswordInput(attrs={
+            'placeholder': '5-stellige PIN',
+        }),
     )
     totp_code = forms.CharField(
         label='TOTP-Code',
         max_length=6,
         min_length=6,
-        widget=forms.TextInput(attrs={'placeholder': '6-stelliger Code'}),
+        widget=forms.TextInput(attrs={
+            'placeholder': '6-stelliger Code',
+        }),
     )
 
 class CustomerForm(forms.ModelForm):
@@ -42,7 +48,9 @@ class CustomerForm(forms.ModelForm):
         label='Antwort / PIN',
         max_length=100,
         required=False,
-        widget=forms.PasswordInput
+        widget=forms.PasswordInput(attrs={
+            'placeholder': 'Antwort oder PIN eingeben',
+        }),
     )
 
     class Meta:
@@ -67,11 +75,36 @@ class AccountSettingsForm(forms.ModelForm):
             'free_above', 'cost_above',
         ]
         widgets = {
-            'max_balance': forms.NumberInput(attrs={'step': '0.01'}),
-            'free_up_to':  forms.NumberInput(attrs={'step': '0.01'}),
-            'cost_within': forms.NumberInput(attrs={'step': '0.01'}),
-            'free_above':  forms.NumberInput(attrs={'step': '0.01'}),
-            'cost_above':  forms.NumberInput(attrs={'step': '0.01'}),
+            'account_model': forms.TextInput(attrs={
+                'placeholder': 'Bezeichnung des Modells',
+            }),
+            'max_balance': forms.NumberInput(attrs={
+                'step': '0.01',
+                'placeholder': 'Betrag in LUF',
+                'data-currency': 'true',
+            }),
+            'free_up_to': forms.NumberInput(attrs={
+                'step': '0.01',
+                'placeholder': 'Betrag für Gratis-Überweisungen',
+                'data-currency': 'true',
+                'id': 'id_free_up_to',
+            }),
+            'cost_within': forms.NumberInput(attrs={
+                'step': '0.01',
+                'placeholder': 'Kosten in LUF oder %',
+                'data-currency': 'true',
+                'id': 'id_cost_within',
+            }),
+            'free_above': forms.NumberInput(attrs={
+                'step': '0.01',
+                'placeholder': 'Freies Volumen oberhalb',
+                'data-currency': 'true',
+            }),
+            'cost_above': forms.NumberInput(attrs={
+                'step': '0.01',
+                'placeholder': 'Kosten in LUF oder %',
+                'data-currency': 'true',
+            }),
         }
 
 class AccountTOTPForm(forms.Form):
@@ -79,5 +112,7 @@ class AccountTOTPForm(forms.Form):
         label='TOTP-Code bestätigen',
         max_length=6,
         min_length=6,
-        widget=forms.TextInput(attrs={'placeholder': '6-stelliger Code'})
+        widget=forms.TextInput(attrs={
+            'placeholder': '6-stelliger Code',
+        }),
     )
