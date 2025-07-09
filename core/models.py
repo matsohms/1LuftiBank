@@ -14,7 +14,7 @@ SECURITY_QUESTIONS = [
 ]
 
 # ——————————————————————————————————————————————————————————————
-# Kunden-Modell
+# Kundenmodell
 # ——————————————————————————————————————————————————————————————
 class Customer(models.Model):
     first_name        = models.CharField(max_length=50)
@@ -60,22 +60,32 @@ class Customer(models.Model):
     def __str__(self):
         return f"{self.last_name}, {self.first_name}"
 
+
 # ——————————————————————————————————————————————————————————————
 # Hilfsfunktionen für Konto-Generierung
 # ——————————————————————————————————————————————————————————————
 def gen_account_number():
-    # 10-stellige Zufalls-Kontonummer
+    """Erzeuge eine zufällige 10-stellige Kontonummer."""
     return ''.join(str(random.randint(0,9)) for _ in range(10))
 
 def gen_iban(acc: str) -> str:
     """
-    OH11 + BANK_CODE (4 Stellen) + Kontonummer (10 Stellen), gruppiert.
+    Baue IBAN im Format:
+      OHXX ABCD EFGH IJKL MNO PQ
+
+    - XX       = zufällige Prüfziffer von 10–99
+    - ABCD EFGH = 8-stellige Bankleitzahl aus ENV['BANK_CODE']
+    - IJKL MNO PQ = 10-stellige Kontonummer
     """
-    bank_code = os.getenv('BANK_CODE', '0000').zfill(4)
-    # Acc ist 20-stellig, wir nehmen die letzten 10:
-    acct = acc[-10:]
-    g1, g2, g3 = acct[:4], acct[4:8], acct[8:]
-    return f"OH11 {bank_code} {g1} {g2} {g3}"
+    # Prüfziffer
+    check = f"{random.randint(10,99)}"
+    # Bank-Code aus ENV, 8 Stellen
+    bank_code = os.getenv('BANK_CODE', '0'*8).zfill(8)
+    b1, b2 = bank_code[:4], bank_code[4:]
+    # Kontonummer-Blöcke
+    g1, g2, g3 = acc[:4], acc[4:7], acc[7:]
+    return f"OH{check} {b1} {b2} {g1} {g2} {g3}"
+
 
 # ——————————————————————————————————————————————————————————————
 # Konto-Modell für Kundenkonten
@@ -119,6 +129,7 @@ class Account(models.Model):
     created_at      = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
+        # Beim ersten Save IBAN, PIN, TOTP-Secret generieren
         if not self.iban:
             self.iban = gen_iban(self.account_number)
         if not self.pin:
