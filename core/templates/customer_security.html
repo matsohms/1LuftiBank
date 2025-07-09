@@ -22,7 +22,6 @@
   <div class="container">
     <h1>Sicherheitsprüfung</h1>
 
-    <!-- Feedback nach Absenden -->
     {% if result == 'correct' %}
       <div class="feedback correct">Antwort ist korrekt!</div>
     {% elif result == 'incorrect' %}
@@ -30,7 +29,6 @@
     {% endif %}
 
     <form method="post">{% csrf_token %}
-      <!-- Frage nur bei Sicherheitsfrage -->
       {% if customer.security_level == 'question' %}
         <div class="row">
           <strong>Frage:</strong> {{ customer.get_security_question_display }}
@@ -40,8 +38,14 @@
         <label for="id_security_answer">
           {% if customer.security_level == 'pin' %}PIN{% else %}Antwort{% endif %}
         </label>
-        <input type="password" name="security_answer" id="id_security_answer" required>
+        <input
+          type="password"
+          name="security_answer"
+          id="id_security_answer"
+          required
+        />
       </div>
+
       <button type="submit" class="btn-primary">Überprüfen</button>
       <a href="{% url 'customer_detail' customer.pk %}">
         <button type="button" class="btn-secondary">Abbrechen</button>
@@ -50,3 +54,4 @@
   </div>
 </body>
 </html>
+
