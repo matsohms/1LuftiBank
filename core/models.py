@@ -1,3 +1,4 @@
+import os
 import random
 import pyotp
 from datetime import datetime
@@ -50,9 +51,8 @@ class Customer(models.Model):
         ordering = ['last_name', 'first_name']
 
     def save(self, *args, **kwargs):
-        # Generiere customer_number beim ersten Speichern
         if not self.pk:
-            super().save(*args, **kwargs)  # braucht eine PK
+            super().save(*args, **kwargs)
             year = datetime.now().strftime('%y')
             self.customer_number = f"LB{year}{self.pk:06d}"
         super().save(*args, **kwargs)
@@ -64,13 +64,28 @@ class Customer(models.Model):
 # Hilfsfunktionen für Konto-Generierung
 # ——————————————————————————————————————————————————————————————
 def gen_account_number():
-    # 20-stellige Zufallsnummer
-    return ''.join(str(random.randint(0,9)) for _ in range(20))
+    # 10-stellige Zufalls-Kontonummer
+    return ''.join(str(random.randint(0,9)) for _ in range(10))
 
-def gen_iban(acc):
-    # OH82 (Prüfziffer), 7827 (Bankcode), dann 5×4-Stellen
-    groups = [acc[i:i+4] for i in range(0, 20, 4)]
-    return f"OH82 7827 {' '.join(groups)}"
+def gen_iban(acc: str) -> str:
+    """
+    IBAN-Format: OHXX XXXX XXXX XXXX XXXX XX
+      - OH = Ländercode
+      - XX = Prüfziffer (2 Ziffern)
+      - erste XXXX = BANK_CODE (4 Ziffern aus ENV)
+      - zweite XXXX = BRANCH_CODE (4 Ziffern aus ENV)
+      - letzte 10 Ziffern = Kontonummer in Gruppen 4-4-2
+    """
+    # lies Bank- und Filialcode aus den ENV-Variablen (müssen gesetzt sein)
+    BANK_CODE   = os.getenv('BANK_CODE', '0000').zfill(4)
+    BRANCH_CODE = os.getenv('BRANCH_CODE', '0000').zfill(4)
+    # generiere Prüfziffer (00–99)
+    check = f"{random.randint(0,99):02d}"
+    # teile Kontonummer in 4-4-2
+    g1 = acc[0:4]
+    g2 = acc[4:8]
+    g3 = acc[8:10]
+    return f"OH{check} {BANK_CODE} {BRANCH_CODE} {g1} {g2} {g3}"
 
 # ——————————————————————————————————————————————————————————————
 # Konto-Modell für Kundenkonten
@@ -82,7 +97,7 @@ class Account(models.Model):
         related_name='accounts'
     )
     account_number  = models.CharField(
-        max_length=20,
+        max_length=10,
         unique=True,
         default=gen_account_number
     )
@@ -114,7 +129,6 @@ class Account(models.Model):
     created_at      = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        # Generiere IBAN, PIN und TOTP-Secret beim ersten Save
         if not self.iban:
             self.iban = gen_iban(self.account_number)
         if not self.pin:
