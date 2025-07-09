@@ -72,15 +72,30 @@ def admin_home(request):
 
 @require_admin
 def admin_dashboard(request):
-    """
-    Zeigt IBAN, Kontostand (placeholder) und Links zu Kundenübersicht / -erstellung.
-    """
-    admin_iban = get_admin_iban()
-    # Platzhalter-Kontostand
-    balance = "2.597.800.000,00"
+    # Roh und formatiert
+    iban_formatted = get_admin_iban(raw=False)
+    # Falls du die „ungespacete“ IBAN mal benötigst:
+    iban_raw       = get_admin_iban(raw=True)
+
+    # Kundenberater-Name aus ENV oder Fallback
+    advisor = os.getenv('BANK_ADVISOR', 'Max Mustermann')
+
+    # Aktueller Kontostand (derzeit statisch, später dynamisch)
+    # z.B. aus ENV: "2597800000.00"
+    balance_raw = os.getenv('ADMIN_BALANCE', '2597800000.00')
+    # Formatieren nach deutschem Schema: Tausender-Punkt, Komma-Dezimal
+    try:
+        b = float(balance_raw)
+        bal_str = f"{b:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except ValueError:
+        bal_str = balance_raw
+
     return render(request, 'admin_dashboard.html', {
-        'admin_iban': admin_iban,
-        'balance': balance
+        'admin_iban':    iban_formatted,
+        'kundenberater': advisor,
+        'kontostand':    bal_str + " LUF",
+        # falls du die rohe IBAN brauchst:
+        'admin_iban_raw': iban_raw,
     })
 
 # ——————————————————————————————————————————————————————————————
