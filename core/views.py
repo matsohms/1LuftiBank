@@ -140,9 +140,7 @@ def customer_detail(request, pk):
 @require_admin
 def customer_delete(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
-    # Erwarteter Text (noch mit Großbuchstaben für die Anzeige)
     expected = f'Kunde {customer.customer_number} löschen'
-    # Für den Vergleich in Kleinbuchstaben
     expected_lower = expected.lower()
 
     if request.method == 'POST':
@@ -152,14 +150,11 @@ def customer_delete(request, pk):
             messages.success(request, f'Kunde {customer.customer_number} wurde gelöscht.')
             return redirect('customer_list')
         else:
-            messages.error(
-                request,
-                f'Bitte genau "{expected}" eingeben.'
-            )
+            messages.error(request, f'Bitte genau "{expected}" eingeben.')
 
     return render(request, 'customer_confirm_delete.html', {
         'customer': customer,
-        'expected': expected  # bleibt mit Großbuchstaben für die Anzeige
+        'expected': expected
     })
 
 # ——————————————————————————————————————————————————————————————
@@ -174,7 +169,7 @@ def customer_security(request, pk):
         answer = request.POST.get('security_answer', '').strip()
         if customer.security_level == 'pin':
             result = 'correct' if answer == customer.security_answer else 'incorrect'
-        else:  # Frage
+        else:
             result = 'correct' if answer.lower() == customer.security_answer.lower() else 'incorrect'
 
     return render(request, 'customer_security.html', {
@@ -182,6 +177,9 @@ def customer_security(request, pk):
         'result':   result
     })
 
+# ——————————————————————————————————————————————————————————————
+# Konto-Erstellung Schritt 1: Einstellungen
+# ——————————————————————————————————————————————————————————————
 @require_admin
 def account_create_step1(request, customer_pk):
     customer = get_object_or_404(Customer, pk=customer_pk)
@@ -192,74 +190,70 @@ def account_create_step1(request, customer_pk):
             acc.customer = customer
             acc.save()
             request.session['new_account_id'] = acc.id
-            return redirect('account_create_step2', customer_pk=customer_pk)
+            return redirect('account_create_step2', customer_pk=customer_pk, account_pk=acc.id)
     else:
         form = AccountSettingsForm()
     return render(request, 'account_step1.html', {
         'form': form, 'customer': customer
     })
 
+# ——————————————————————————————————————————————————————————————
+# Konto-Erstellung Schritt 2: QR-Code & TOTP-Verifikation
+# ——————————————————————————————————————————————————————————————
 @require_admin
 def account_create_step2(request, customer_pk, account_pk):
-    """
-    Zeigt den TOTP-QR-Code für das neu angelegte Konto an und verifiziert den
-    vom Admin eingegebenen TOTP-Code, bevor wir zu Step 3 weitergehen.
-    """
     account = get_object_or_404(Account, pk=account_pk, customer__pk=customer_pk)
-
-    # Erzeuge Provisioning-URI und daraus ein QR-Bild
     totp = pyotp.TOTP(account.totp_secret)
-    uri  = totp.provisioning_uri(
-        name=account.account_number,
-        issuer_name="LuftiBank"
-    )
-    img = qrcode.make(uri)
-    buf = io.BytesIO()
+    uri  = totp.provisioning_uri(name=account.account_number, issuer_name="LuftiBank")
+    img  = qrcode.make(uri)
+    buf  = io.BytesIO()
     img.save(buf, format='PNG')
-    qr_b64 = base64.b64encode(buf.getvalue()).decode()  # Base64-String für <img>
+    qr_b64 = base64.b64encode(buf.getvalue()).decode()
 
     error = None
     if request.method == 'POST':
         code = request.POST.get('totp_code', '').strip()
         if totp.verify(code):
-            return redirect(
-                'account_create_step3',
-                customer_pk=customer_pk,
-                account_pk=account_pk
-            )
+            return redirect('account_create_step3', customer_pk=customer_pk, account_pk=account_pk)
         else:
             error = 'Ungültiger TOTP-Code. Bitte erneut scannen und testen.'
 
     return render(request, 'account_step2.html', {
         'account': account,
         'qr_code': qr_b64,
-        'error':    error
+        'error':   error
     })
 
+# ——————————————————————————————————————————————————————————————
+# Konto-Erstellung Schritt 3: abschließender TOTP-Check
+# ——————————————————————————————————————————————————————————————
 @require_admin
-def account_create_step3(request, customer_pk):
-    acc = get_object_or_404(Account, id=request.session.get('new_account_id'))
+def account_create_step3(request, customer_pk, account_pk):
+    account = get_object_or_404(Account, pk=account_pk, customer__pk=customer_pk)
     if request.method == 'POST':
         form = AccountTOTPForm(request.POST)
         if form.is_valid():
             code = form.cleaned_data['totp_check']
-            if pyotp.TOTP(acc.totp_secret).verify(code):
+            if pyotp.TOTP(account.totp_secret).verify(code):
                 del request.session['new_account_id']
                 return redirect('customer_detail', pk=customer_pk)
             form.add_error('totp_check', 'Ungültiger TOTP-Code.')
     else:
         form = AccountTOTPForm()
     return render(request, 'account_step3.html', {
-        'form': form, 'account': acc
+        'form': form, 'account': account
     })
 
+# ——————————————————————————————————————————————————————————————
+# Konto bearbeiten
+# ——————————————————————————————————————————————————————————————
 class AccountForm(ModelForm):
     class Meta:
         model = Account
         fields = [
             'account_model',
-            'max_balance','free_up_to','cost_within',
-            'free_above','cost_above'
+            'max_balance', 'free_up_to', 'cost_within',
+            'free_above', 'cost_above'
         ]
 
 @require_admin
@@ -278,12 +272,13 @@ def account_edit(request, customer_pk, account_pk):
         'edit': True
     })
 
-# ------------- PIN ändern -------------
+# ——————————————————————————————————————————————————————————————
+# PIN ändern (zufällig neu generieren)
+# ——————————————————————————————————————————————————————————————
 @require_admin
 def account_pin_change(request, customer_pk, account_pk):
     account = get_object_or_404(Account, pk=account_pk, customer__pk=customer_pk)
     if request.method == 'POST':
-        # einfache Neugenerierung
         new_pin = ''.join(str(random.randint(0,9)) for _ in range(5))
         account.pin = new_pin
         account.save()
@@ -297,22 +292,25 @@ def account_pin_change(request, customer_pk, account_pk):
         'account': account
     })
 
+# ——————————————————————————————————————————————————————————————
+# Konto löschen mit Bestätigung
+# ——————————————————————————————————————————————————————————————
 @require_admin
 def account_delete(request, customer_pk, account_pk):
     account = get_object_or_404(Account, pk=account_pk, customer__pk=customer_pk)
-    expected = f"konto {account.account_number} löschen"
+    expected = f'konto {account.account_number} löschen'
     error = None
 
-    if request.method == "POST":
-        inp = request.POST.get("confirm_input", "").strip().lower()
+    if request.method == 'POST':
+        inp = request.POST.get('confirm_input', '').strip().lower()
         if inp == expected:
             account.delete()
-            messages.success(request, f"Konto {account.account_number} gelöscht.")
-            return redirect("customer_detail", pk=customer_pk)
+            messages.success(request, f'Konto {account.account_number} gelöscht.')
+            return redirect('customer_detail', pk=customer_pk)
         else:
             error = f'Bitte genau "{expected}" eingeben.'
 
-    return render(request, "account_confirm_delete.html", {
-        "account": account,
-        "error": error
+    return render(request, 'account_confirm_delete.html', {
+        'account': account,
+        'error': error
     })
