@@ -184,16 +184,22 @@ def customer_delete(request, pk):
 def customer_security(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
     result = None
+
     if request.method == 'POST':
+        # Wir lesen jetzt genau das Feld aus, das im Template name="security_answer" heißt
         answer = request.POST.get('security_answer', '').strip()
+
         if customer.security_level == 'pin':
+            # PIN-Vergleich (case-sensitive)
             result = 'correct' if answer == customer.security_answer else 'incorrect'
         else:
+            # Frage: Kleinschreibung ignorieren
             result = 'correct' if answer.lower() == customer.security_answer.lower() else 'incorrect'
-    return render(request, 'customer_security.html', {
-        'customer': customer, 'result': result
-    })
 
+    return render(request, 'customer_security.html', {
+        'customer': customer,
+        'result':   result
+    })
 # ——————————————————————————————————————————————————————————————
 # Konto-Erstellung Schritt 1: Einstellungen in Session
 # ——————————————————————————————————————————————————————————————
