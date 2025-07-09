@@ -69,14 +69,12 @@ def admin_home(request):
 
 @require_admin
 def admin_dashboard(request):
-    iban = get_admin_iban()
-    # Beispiel-Platzhalterwerte
-    kontostand = "2.597.800.000,00 LUF"
-    kundenberater = os.getenv('ADMIN_NAME', 'Max Mustermann')
+    # Admin-Kontonummer aus ENV
+    admin_acc = os.getenv('ADMIN_ACCOUNT_NUMBER')
+    admin_iban = gen_iban(admin_acc)
     return render(request, 'admin_dashboard.html', {
-        'admin_iban': iban,
-        'kontostand': kontostand,
-        'kundenberater': kundenberater
+        'admin_iban': admin_iban,
+        …
     })
 
 # ——————————————————————————————————————————————————————————————
