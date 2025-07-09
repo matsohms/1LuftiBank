@@ -50,9 +50,8 @@ class Customer(models.Model):
         ordering = ['last_name', 'first_name']
 
     def save(self, *args, **kwargs):
-        # Generiere customer_number beim ersten Speichern
         if not self.pk:
-            super().save(*args, **kwargs)  # braucht eine PK für Format
+            super().save(*args, **kwargs)
             year = datetime.now().strftime('%y')
             self.customer_number = f"LB{year}{self.pk:06d}"
         super().save(*args, **kwargs)
@@ -64,10 +63,13 @@ class Customer(models.Model):
 # Hilfsfunktionen für Konto-Generierung
 # ——————————————————————————————————————————————————————————————
 def gen_account_number():
-    return ''.join(str(random.randint(0,9)) for _ in range(8))
+    # 20-stellige Zufallsnummer
+    return ''.join(str(random.randint(0,9)) for _ in range(20))
 
 def gen_iban(acc):
-    return f"OH82 7827 {acc[:4]} {acc[4:8]}"
+    # OH82 (Prüfziffer), 7827 (Bankcode), dann 5×4-Stellen
+    groups = [acc[i:i+4] for i in range(0, 20, 4)]
+    return f"OH82 7827 {' '.join(groups)}"
 
 # ——————————————————————————————————————————————————————————————
 # Konto-Modell für Kundenkonten
@@ -79,7 +81,7 @@ class Account(models.Model):
         related_name='accounts'
     )
     account_number  = models.CharField(
-        max_length=8,
+        max_length=20,
         unique=True,
         default=gen_account_number
     )
@@ -111,7 +113,6 @@ class Account(models.Model):
     created_at      = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        # Generiere IBAN, PIN und TOTP-Secret beim ersten Save
         if not self.iban:
             self.iban = gen_iban(self.account_number)
         if not self.pin:
