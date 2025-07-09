@@ -19,7 +19,7 @@ from .forms import (
     AccountSettingsForm,
     AccountTOTPForm
 )
-from .utils import get_admin_iban
+from .utils import get_admin_iban  # Modul, das ADMIN_ACCOUNT_NUMBER & BANK_CODE ausliest
 
 # ——————————————————————————————————————————————————————————————
 # Helfer-Decorator für Admin-Schutz
@@ -39,9 +39,11 @@ def login_view(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            acc = form.cleaned_data['account_number']
-            pin = form.cleaned_data['pin']
-            code = form.cleaned_data['totp_code']
+            acc, pin, code = (
+                form.cleaned_data['account_number'],
+                form.cleaned_data['pin'],
+                form.cleaned_data['totp_code'],
+            )
             ADMIN_ACC    = os.getenv('ADMIN_ACCOUNT_NUMBER')
             ADMIN_PIN    = os.getenv('ADMIN_PIN')
             ADMIN_SECRET = os.getenv('ADMIN_TOTP_SECRET')
@@ -65,16 +67,20 @@ def logout_view(request):
 # ——————————————————————————————————————————————————————————————
 @require_admin
 def admin_home(request):
+    # leitet direkt zum Dashboard
     return redirect('admin_dashboard')
 
 @require_admin
 def admin_dashboard(request):
-    # Admin-Kontonummer aus ENV
-    admin_acc = os.getenv('ADMIN_ACCOUNT_NUMBER')
-    admin_iban = gen_iban(admin_acc)
+    """
+    Zeigt IBAN, Kontostand (placeholder) und Links zu Kundenübersicht / -erstellung.
+    """
+    admin_iban = get_admin_iban()
+    # Platzhalter-Kontostand
+    balance = "2.597.800.000,00"
     return render(request, 'admin_dashboard.html', {
         'admin_iban': admin_iban,
-        …
+        'balance': balance
     })
 
 # ——————————————————————————————————————————————————————————————
@@ -174,7 +180,7 @@ def customer_security(request, pk):
     })
 
 # ——————————————————————————————————————————————————————————————
-# Konto-Erstellung Schritt 1
+# Konto-Erstellung Schritt 1: Einstellungen in Session
 # ——————————————————————————————————————————————————————————————
 @require_admin
 def account_create_step1(request, customer_pk):
@@ -182,12 +188,15 @@ def account_create_step1(request, customer_pk):
     if request.method == 'POST':
         form = AccountSettingsForm(request.POST)
         if form.is_valid():
-            acc = form.save(commit=False)
-            acc.customer = customer
-            acc.save()
-            return redirect('account_create_step2',
-                            customer_pk=customer_pk,
-                            account_pk=acc.pk)
+            # Form-Daten in Session speichern
+            request.session['new_account_data'] = form.cleaned_data
+            # Kontonummer & TOTP-Secret generieren
+            from .models import gen_account_number
+            acct_no = gen_account_number()
+            totp_secret = pyotp.random_base32()
+            request.session['new_account_number'] = acct_no
+            request.session['new_totp_secret'] = totp_secret
+            return redirect('account_create_step2', customer_pk=customer_pk)
     else:
         form = AccountSettingsForm()
     return render(request, 'account_step1.html', {
@@ -195,13 +204,17 @@ def account_create_step1(request, customer_pk):
     })
 
 # ——————————————————————————————————————————————————————————————
-# Konto-Erstellung Schritt 2 (QR & TOTP)
+# Konto-Erstellung Schritt 2: QR-Code & TOTP-Verifikation
 # ——————————————————————————————————————————————————————————————
 @require_admin
-def account_create_step2(request, customer_pk, account_pk):
-    account = get_object_or_404(Account, pk=account_pk, customer__pk=customer_pk)
-    totp = pyotp.TOTP(account.totp_secret)
-    uri  = totp.provisioning_uri(account.account_number, issuer_name="LuftiBank")
+def account_create_step2(request, customer_pk):
+    acct_no    = request.session.get('new_account_number')
+    totp_secret= request.session.get('new_totp_secret')
+    if not acct_no or not totp_secret:
+        return redirect('account_create_step1', customer_pk=customer_pk)
+
+    totp = pyotp.TOTP(totp_secret)
+    uri  = totp.provisioning_uri(name=acct_no, issuer_name="LuftiBank")
     img  = qrcode.make(uri)
     buf  = io.BytesIO(); img.save(buf, format='PNG')
     qr_b64 = base64.b64encode(buf.getvalue()).decode()
@@ -210,34 +223,50 @@ def account_create_step2(request, customer_pk, account_pk):
     if request.method == 'POST':
         code = request.POST.get('totp_code','').strip()
         if totp.verify(code):
-            return redirect('account_create_step3',
-                            customer_pk=customer_pk,
-                            account_pk=account_pk)
-        error = 'Ungültiger TOTP-Code.'
+            return redirect('account_create_step3', customer_pk=customer_pk)
+        error = 'Ungültiger TOTP-Code. Bitte erneut scannen und testen.'
 
     return render(request, 'account_step2.html', {
-        'account': account,
         'qr_code': qr_b64,
-        'error': error
+        'error':   error
     })
 
 # ——————————————————————————————————————————————————————————————
-# Konto-Erstellung Schritt 3 (Abschluss)
+# Konto-Erstellung Schritt 3: Abschluss & echte DB-Anlage
 # ——————————————————————————————————————————————————————————————
 @require_admin
-def account_create_step3(request, customer_pk, account_pk):
-    account = get_object_or_404(Account, pk=account_pk, customer__pk=customer_pk)
+def account_create_step3(request, customer_pk):
+    data    = request.session.get('new_account_data')
+    acct_no = request.session.get('new_account_number')
+    secret  = request.session.get('new_totp_secret')
+    if not data or not acct_no or not secret:
+        return redirect('account_create_step1', customer_pk=customer_pk)
+
     if request.method == 'POST':
         form = AccountTOTPForm(request.POST)
         if form.is_valid():
             code = form.cleaned_data['totp_check']
-            if pyotp.TOTP(account.totp_secret).verify(code):
+            if pyotp.TOTP(secret).verify(code):
+                # Erst jetzt Konto in der DB speichern
+                customer = get_object_or_404(Customer, pk=customer_pk)
+                acc = Account(
+                    customer=customer,
+                    account_number=acct_no,
+                    totp_secret=secret,
+                    **data
+                )
+                acc.save()
+                # Session aufräumen
+                for k in ('new_account_data','new_account_number','new_totp_secret'):
+                    request.session.pop(k, None)
                 return redirect('customer_detail', pk=customer_pk)
             form.add_error('totp_check','Ungültiger TOTP-Code.')
     else:
         form = AccountTOTPForm()
+
     return render(request, 'account_step3.html', {
-        'form': form, 'account': account
+        'form':          form,
+        'account_number': acct_no
     })
 
 # ——————————————————————————————————————————————————————————————
@@ -248,8 +277,8 @@ class AccountForm(ModelForm):
         model  = Account
         fields = [
             'account_model',
-            'max_balance','free_up_to','cost_within',
-            'free_above','cost_above'
+            'max_balance', 'free_up_to', 'cost_within',
+            'free_above',  'cost_above'
         ]
 
 @require_admin
@@ -276,7 +305,8 @@ def account_pin_change(request, customer_pk, account_pk):
     account = get_object_or_404(Account, pk=account_pk, customer__pk=customer_pk)
     if request.method == 'POST':
         new_pin = ''.join(str(random.randint(0,9)) for _ in range(5))
-        account.pin = new_pin; account.save()
+        account.pin = new_pin
+        account.save()
         return render(request, 'account_pin_changed.html', {
             'customer': account.customer,
             'account': account,
