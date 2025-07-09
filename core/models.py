@@ -51,6 +51,7 @@ class Customer(models.Model):
         ordering = ['last_name', 'first_name']
 
     def save(self, *args, **kwargs):
+        # Generiere Kundennummer beim ersten Speichern
         if not self.pk:
             super().save(*args, **kwargs)
             year = datetime.now().strftime('%y')
@@ -68,13 +69,14 @@ def gen_account_number():
     """Erzeuge eine zufällige 10-stellige Kontonummer."""
     return ''.join(str(random.randint(0,9)) for _ in range(10))
 
+
 def gen_iban(acc: str) -> str:
     """
     Baue IBAN im Format:
       OHXX ABCD EFGH IJKL MNO PQ
 
-    - XX       = zufällige Prüfziffer von 10–99
-    - ABCD EFGH = 8-stellige Bankleitzahl aus ENV['BANK_CODE']
+    - XX         = zufällige Prüfziffer von 10–99
+    - ABCD EFGH  = 8-stellige Bankleitzahl aus ENV['BANK_CODE']
     - IJKL MNO PQ = 10-stellige Kontonummer
     """
     # Prüfziffer
@@ -91,6 +93,11 @@ def gen_iban(acc: str) -> str:
 # Konto-Modell für Kundenkonten
 # ——————————————————————————————————————————————————————————————
 class Account(models.Model):
+    CALC_CHOICES = [
+        ('percent', 'Prozent'),
+        ('flat',    'Pauschal'),
+    ]
+
     customer        = models.ForeignKey(
         Customer,
         on_delete=models.CASCADE,
@@ -118,6 +125,12 @@ class Account(models.Model):
         max_digits=10, decimal_places=2,
         null=True, blank=True
     )
+    calc_type       = models.CharField(
+        max_length=7,
+        choices=CALC_CHOICES,
+        default='percent',
+        help_text="Kostenberechnung: Prozent oder Pauschal"
+    )
     free_above      = models.DecimalField(
         max_digits=14, decimal_places=2,
         null=True, blank=True
@@ -129,7 +142,7 @@ class Account(models.Model):
     created_at      = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        # Beim ersten Save IBAN, PIN, TOTP-Secret generieren
+        # Beim ersten Save: IBAN, PIN & TOTP-Secret generieren
         if not self.iban:
             self.iban = gen_iban(self.account_number)
         if not self.pin:
