@@ -1,16 +1,27 @@
 import os
-import random
 
-def get_admin_iban() -> str:
+def get_admin_iban(raw: bool = False) -> str:
     """
-    Baut eine IBAN zusammen aus:
-      - Ländercode OH
-      - Prüfziffer 11 (statisch für Admin)
-      - BANK_CODE aus ENV (4 Stellen)
-      - Admin-Kontonummer (10 Stellen aus ENV), gruppiert 4-4-2
+    Baut aus ENV-Variablen ADMIN_ACCOUNT_NUMBER (10-stellig) 
+    und BANK_CODE (8-stellig) eine IBAN:
+      OH11 AAAA BBBB CCCC DDDD EE
+    wobei AAAA BBBB die Bankleitzahl und
+    CCCC DDDD EE die 10-stellige Admin-Kontonummer in 4-4-2 splittet.
     """
-    BANK_CODE = os.getenv('BANK_CODE', '0000').zfill(4)
-    admin_acc = os.getenv('ADMIN_ACCOUNT_NUMBER', '').zfill(10)
-    # Gruppen aufteilen
-    g1, g2, g3 = admin_acc[:4], admin_acc[4:8], admin_acc[8:]
-    return f"OH11 {BANK_CODE} {g1} {g2} {g3}"
+    acct = os.getenv('ADMIN_ACCOUNT_NUMBER', '').zfill(10)
+    blz  = os.getenv('BANK_CODE', '').zfill(8)
+    # Prüfziffer statisch „11“
+    parts = [
+      "OH11",
+      blz[:4],
+      blz[4:],
+      acct[:4],
+      acct[4:8],
+      acct[8:]
+    ]
+    if raw:
+        # ohne Leerzeichen
+        return "".join(parts)
+    else:
+        # mit Leerzeichen, gruppiert
+        return " ".join(parts)
