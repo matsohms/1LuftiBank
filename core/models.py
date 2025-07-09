@@ -69,23 +69,13 @@ def gen_account_number():
 
 def gen_iban(acc: str) -> str:
     """
-    IBAN-Format: OHXX XXXX XXXX XXXX XXXX XX
-      - OH = Ländercode
-      - XX = Prüfziffer (2 Ziffern)
-      - erste XXXX = BANK_CODE (4 Ziffern aus ENV)
-      - zweite XXXX = BRANCH_CODE (4 Ziffern aus ENV)
-      - letzte 10 Ziffern = Kontonummer in Gruppen 4-4-2
+    OH11 + BANK_CODE (4 Stellen) + Kontonummer (10 Stellen), gruppiert.
     """
-    # lies Bank- und Filialcode aus den ENV-Variablen (müssen gesetzt sein)
-    BANK_CODE   = os.getenv('BANK_CODE', '0000').zfill(4)
-    BRANCH_CODE = os.getenv('BRANCH_CODE', '0000').zfill(4)
-    # generiere Prüfziffer (00–99)
-    check = f"{random.randint(0,99):02d}"
-    # teile Kontonummer in 4-4-2
-    g1 = acc[0:4]
-    g2 = acc[4:8]
-    g3 = acc[8:10]
-    return f"OH{check} {BANK_CODE} {BRANCH_CODE} {g1} {g2} {g3}"
+    bank_code = os.getenv('BANK_CODE', '0000').zfill(4)
+    # Acc ist 20-stellig, wir nehmen die letzten 10:
+    acct = acc[-10:]
+    g1, g2, g3 = acct[:4], acct[4:8], acct[8:]
+    return f"OH11 {bank_code} {g1} {g2} {g3}"
 
 # ——————————————————————————————————————————————————————————————
 # Konto-Modell für Kundenkonten
