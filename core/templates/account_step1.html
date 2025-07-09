@@ -1,36 +1,46 @@
+<!-- core/templates/account_step1.html -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <title>Konto anlegen – Schritt 1</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f7f7f7; }
-    .container { background: #eee; padding: 20px; margin: 40px auto; width: 90%; max-width: 600px; }
-    .row { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
-    .row label { flex: 1; padding-top: 8px; }
-    .row input, .row select { flex: 2; padding: 8px; background: #fff; border: 1px solid #ccc; }
-    .full-row { display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px; }
-    .full-row label { padding-bottom: 5px; }
-    button { border: none; padding: 8px 16px; font-family: Arial; margin-right: 10px; }
-    .btn-primary { background: #007bff; color: #fff; }
-    .btn-secondary { background: #6c757d; color: #fff; }
+    /* … dein bestehendes CSS … */
+    .currency::after { content: " LUF"; }
+    .percent::after  { content: "%"; }
   </style>
   <script>
-    document.addEventListener('DOMContentLoaded', function(){
-      const freeCheckbox = document.getElementById('free_checkbox');
-      const costBlock    = document.getElementById('cost_block');
-
-      function toggleCosts(){
-        costBlock.style.display = freeCheckbox.checked ? 'none' : 'block';
-      }
-      freeCheckbox.addEventListener('change', toggleCosts);
-      toggleCosts();
+    document.addEventListener('DOMContentLoaded', () => {
+      // Umschalter Pauschal/Prozent
+      const costWithinType = document.getElementById('cost_within_type');
+      const costWithinVal  = document.getElementById('id_cost_within');
+      costWithinType.addEventListener('change', () => {
+        if (costWithinType.checked) {
+          costWithinVal.classList.remove('percent');
+          costWithinVal.classList.add('currency');
+        } else {
+          costWithinVal.classList.remove('currency');
+          costWithinVal.classList.add('percent');
+        }
+      });
+      // Formatierung bei Blur
+      document.querySelectorAll('input[type=number]').forEach(input => {
+        input.addEventListener('blur', () => {
+          let v = parseFloat(input.value);
+          if (isNaN(v)) return;
+          if (input.classList.contains('currency')) {
+            input.value = v.toLocaleString('de-DE', { minimumFractionDigits: 2 });
+          } else if (input.classList.contains('percent')) {
+            input.value = v.toLocaleString('de-DE', { maximumFractionDigits: 2 }) + '%';
+          }
+        });
+      });
     });
   </script>
 </head>
 <body>
   <div class="container">
-    <h1>Konto anlegen – Schritt 1</h1>
+    <h1>Schritt 1: Einstellungen für neues Konto</h1>
     <form method="post">{% csrf_token %}
       <div class="row">
         <label for="id_account_model">Kontomodell</label>
@@ -38,34 +48,30 @@
       </div>
       <div class="row">
         <label for="id_max_balance">Maximale Kontoauslastung</label>
-        {{ form.max_balance }}
+        {{ form.max_balance }} <span>LUF</span>
       </div>
       <div class="row">
-        <label for="free_checkbox">Kostenlose Überweisung</label>
-        <input type="checkbox" id="free_checkbox" name="free_checkbox" checked />
+        <label>
+          <input type="checkbox" id="free_within" name="free_within" checked>
+          Kostenlose Überweisungen
+        </label>
       </div>
-
-      <div id="cost_block">
-        <div class="row">
-          <label for="id_free_up_to">Kostenpflichtig bis (Betrag)</label>
-          {{ form.free_up_to }}
-        </div>
-        <div class="row">
-          <label for="id_cost_within">Kosten pro Überweisung</label>
-          {{ form.cost_within }}
-        </div>
-        <div class="row">
-          <label for="id_cost_mode">Abrechnung als</label>
-          <select id="id_cost_mode" name="cost_mode">
-            <option value="percent">Prozent</option>
-            <option value="fixed">Pauschal</option>
-          </select>
-        </div>
+      <div id="cost-block" class="row">
+        <label for="id_free_up_to">Kostenpflichtig bis</label>
+        {{ form.free_up_to }} <span>LUF</span>
+        <br>
+        <label>
+          <input type="checkbox" id="cost_within_type">
+          Pauschal (sonst Prozent)
+        </label>
+        <label for="id_cost_within">Kosten pro Überweisung</label>
+        <input type="number" step="0.01" id="id_cost_within" name="cost_within" class="currency">
       </div>
-
-      <button type="submit" class="btn-primary">Weiter zu QR-Code</button>
+      <!-- analoge Felder für free_above / cost_above… -->
+      <button type="submit" class="btn-primary">Weiter</button>
       <a href="{% url 'customer_detail' customer.pk %}"><button type="button" class="btn-secondary">Abbrechen</button></a>
     </form>
   </div>
 </body>
 </html>
+
