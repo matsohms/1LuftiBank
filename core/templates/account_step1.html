@@ -1,12 +1,71 @@
 <!DOCTYPE html>
 <html lang="de">
-<head><meta charset="UTF-8"><title>Neues Konto – Schritt 1</title></head>
+<head>
+  <meta charset="UTF-8">
+  <title>Konto anlegen – Schritt 1</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7f7; }
+    .container { background: #eee; padding: 20px; margin: 40px auto; width: 90%; max-width: 600px; }
+    .row { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
+    .row label { flex: 1; padding-top: 8px; }
+    .row input, .row select { flex: 2; padding: 8px; background: #fff; border: 1px solid #ccc; }
+    .full-row { display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px; }
+    .full-row label { padding-bottom: 5px; }
+    button { border: none; padding: 8px 16px; font-family: Arial; margin-right: 10px; }
+    .btn-primary { background: #007bff; color: #fff; }
+    .btn-secondary { background: #6c757d; color: #fff; }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      const freeCheckbox = document.getElementById('free_checkbox');
+      const costBlock    = document.getElementById('cost_block');
+
+      function toggleCosts(){
+        costBlock.style.display = freeCheckbox.checked ? 'none' : 'block';
+      }
+      freeCheckbox.addEventListener('change', toggleCosts);
+      toggleCosts();
+    });
+  </script>
+</head>
 <body>
-  <h1>Neues Konto für {{ customer.first_name }} {{ customer.last_name }}</h1>
-  <form method="post">{% csrf_token %}
-    {{ form.as_p }}
-    <button>Weiter</button>
-  </form>
-  <a href="{% url 'customer_detail' customer.pk %}">Abbrechen</a>
+  <div class="container">
+    <h1>Konto anlegen – Schritt 1</h1>
+    <form method="post">{% csrf_token %}
+      <div class="row">
+        <label for="id_account_model">Kontomodell</label>
+        {{ form.account_model }}
+      </div>
+      <div class="row">
+        <label for="id_max_balance">Maximale Kontoauslastung</label>
+        {{ form.max_balance }}
+      </div>
+      <div class="row">
+        <label for="free_checkbox">Kostenlose Überweisung</label>
+        <input type="checkbox" id="free_checkbox" name="free_checkbox" checked />
+      </div>
+
+      <div id="cost_block">
+        <div class="row">
+          <label for="id_free_up_to">Kostenpflichtig bis (Betrag)</label>
+          {{ form.free_up_to }}
+        </div>
+        <div class="row">
+          <label for="id_cost_within">Kosten pro Überweisung</label>
+          {{ form.cost_within }}
+        </div>
+        <div class="row">
+          <label for="id_cost_mode">Abrechnung als</label>
+          <select id="id_cost_mode" name="cost_mode">
+            <option value="percent">Prozent</option>
+            <option value="fixed">Pauschal</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary">Weiter zu QR-Code</button>
+      <a href="{% url 'customer_detail' customer.pk %}"><button type="button" class="btn-secondary">Abbrechen</button></a>
+    </form>
+  </div>
 </body>
 </html>
