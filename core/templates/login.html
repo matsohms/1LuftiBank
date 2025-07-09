@@ -2,32 +2,60 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Admin Login</title>
+  <title>Admin-Login</title>
   <style>
-    /* Sichtbare Eingabefelder */
-    input { border: 1px solid #333; padding: 8px; margin: 4px 0; width: 100%; box-sizing: border-box; }
-    label { font-weight: bold; display: block; margin-top: 12px; }
-    button { padding: 8px 16px; margin-top: 12px; }
-    .container { max-width: 300px; margin: 40px auto; }
+    body { font-family: Arial, sans-serif; background: #f7f7f7; }
+    .container {
+      background: #eee;
+      padding: 20px;
+      margin: 60px auto;
+      width: 320px;
+      border-radius: 4px;
+    }
+    h1 { margin-bottom: 20px; font-size: 1.5em; }
+    label { display: block; font-weight: bold; margin-top: 12px; }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 2px;
+      background: #fff;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin-top: 20px;
+      border: none;
+      font-size: 1em;
+      font-family: Arial, sans-serif;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+    .btn-primary { background: #007bff; color: #fff; }
+    .error { color: #c00; margin-top: 10px; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Admin-Login</h1>
     {% if error %}
-      <p style="color:red">{{ error }}</p>
+      <p class="error">{{ error }}</p>
     {% endif %}
-    <form method="post">{% csrf_token %}
-      <label for="id_account_number">Kontonummer</label>
+    <form method="post">
+      {% csrf_token %}
+      <label for="id_account_number">Kontonummer (10 Ziffern)</label>
       {{ form.account_number }}
-
-      <label for="id_pin">PIN</label>
+      
+      <label for="id_pin">PIN (5 Ziffern)</label>
       {{ form.pin }}
-
+      
       <label for="id_totp_code">TOTP-Code</label>
       {{ form.totp_code }}
-
-      <button type="submit">Einloggen</button>
+      
+      <button type="submit" class="btn btn-primary">Einloggen</button>
     </form>
   </div>
 </body>
