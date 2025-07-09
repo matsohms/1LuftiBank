@@ -6,47 +6,52 @@
   <style>
     body { font-family: Arial, sans-serif; background: #f7f7f7; }
     .container { background: #eee; padding: 20px; margin: 40px auto; width: 90%; max-width: 600px; }
-    .row { display: flex; gap: 10px; margin-bottom: 15px; }
+    .row { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
     .row label { flex: 1; padding-top: 8px; }
     .row input, .row select { flex: 1; padding: 8px; background: #fff; border: 1px solid #ccc; }
+    .inline { display: inline-flex; align-items: center; gap: 5px; }
     button { border: none; padding: 8px 16px; font-family: Arial; margin-right: 10px; }
     .btn-primary { background: #007bff; color: #fff; }
     .btn-secondary { background: #6c757d; color: #fff; }
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const chkFree = document.getElementById('id_free_up_to');
-      const costWithinRow = document.getElementById('row_cost_within');
-      const freeAboveRow  = document.getElementById('row_free_above');
-      const costAboveRow  = document.getElementById('row_cost_above');
-      const modeSwitch   = document.getElementById('billing_mode');
+      const freeCheck = document.getElementById('id_free_within_zero');
+      const paidContainer = document.getElementById('paid-options');
+      const calcTypeSelect = document.getElementById('id_calc_type');
+      const costField = document.getElementById('id_cost_within');
+      const maxBalField = document.getElementById('id_max_balance');
 
-      function toggleCostFields() {
-        if (chkFree.checked) {
-          costWithinRow.style.display = 'none';
-        } else {
-          costWithinRow.style.display = 'flex';
-        }
+      // Zwei Nachkommastellen automatisch einfügen
+      function formatAmount(el, decimals) {
+        let v = el.value.replace(/[^0-9.,]/g,'').replace(',','.');
+        if (!v) return;
+        el.value = (Math.round(parseFloat(v)*Math.pow(10,decimals)) / Math.pow(10,decimals))
+                     .toFixed(decimals);
       }
-      chkFree.addEventListener('change', toggleCostFields);
-      toggleCostFields();
+      maxBalField.addEventListener('blur', ()=> formatAmount(maxBalField,2));
 
-      modeSwitch.addEventListener('change', () => {
-        const isPercent = modeSwitch.value === 'percent';
-        document.getElementById('label_cost_within').textContent = 
-          isPercent ? 'Kosten pro Überweisung (%)' : 'Kosten pro Überweisung (LUF)';
-        document.getElementById('cost_within_input').placeholder = 
-          isPercent ? 'z.B. 0.5' : 'z.B. 2,50';
+      // Toggling kostenlose Überweisung
+      freeCheck.addEventListener('change', () => {
+        paidContainer.style.display = freeCheck.checked ? 'none' : 'block';
       });
+      freeCheck.dispatchEvent(new Event('change'));
 
-      // Formatierung: Euro-Stil bei Blur
-      document.querySelectorAll('input[data-currency]').forEach(inp => {
-        inp.addEventListener('blur', () => {
-          let v = parseFloat(inp.value.replace(',', '.'));
-          if (!isNaN(v)) {
-            inp.value = v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-          }
-        });
+      // Umschalter Prozent/Pauschal
+      calcTypeSelect.addEventListener('change', () => {
+        if (calcTypeSelect.value === 'percent') {
+          costField.setAttribute('step','0.001');
+          costField.placeholder = 'z.B. 0,500 %';
+        } else {
+          costField.setAttribute('step','0.01');
+          costField.placeholder = 'z.B. 1,00 LUF';
+        }
+      });
+      calcTypeSelect.dispatchEvent(new Event('change'));
+
+      costField.addEventListener('blur', ()=> {
+        const decimals = calcTypeSelect.value === 'percent' ? 3 : 2;
+        formatAmount(costField, decimals);
       });
     });
   </script>
@@ -61,43 +66,35 @@
         {{ form.account_model }}
       </div>
 
-      <!-- Maximale Kontenauslastung -->
+      <!-- Maximale Kontoauslastung -->
       <div class="row">
-        <label for="id_max_balance">Maximale Kontoauslastung</label>
+        <label for="id_max_balance">Maximale Kontoauslastung (LUF)</label>
         {{ form.max_balance }}
       </div>
 
-      <!-- Kostenlose Überweisung? -->
-      <div class="row">
-        <label for="id_free_up_to">Kostenlose Überweisung</label>
-        <input type="checkbox" id="id_free_up_to" name="free_up_to" checked />
+      <!-- Kostenlose Überweisung Checkbox -->
+      <div class="row inline">
+        <input type="checkbox" id="id_free_within_zero" checked>
+        <label for="id_free_within_zero">Kostenlose Überweisung</label>
       </div>
 
-      <!-- Kostenpflichtig bis -->
-      <div class="row" id="row_cost_within">
-        <label for="id_cost_within">Kostenpflichtig ab Betrag</label>
-        {{ form.cost_within }}
-      </div>
-
-      <!-- Abrechnungsmodus -->
-      <div class="row">
-        <label for="billing_mode">Abrechnungsmodus</label>
-        <select id="billing_mode" name="billing_mode">
-          <option value="flat">Pauschal</option>
-          <option value="percent">Prozent</option>
-        </select>
-      </div>
-
-      <!-- Freies Volumen oberhalb -->
-      <div class="row" id="row_free_above">
-        <label for="id_free_above">Freies Volumen oberhalb</label>
-        {{ form.free_above }}
-      </div>
-
-      <!-- Kosten oberhalb -->
-      <div class="row" id="row_cost_above">
-        <label for="id_cost_above">Kosten pro Überweisung</label>
-        {{ form.cost_above }}
+      <!-- Wenn deaktiviert: Kostenpflichtig bis + Berechnungsart + Kostenfeld -->
+      <div id="paid-options" style="display:none">
+        <div class="row">
+          <label for="id_free_up_to">Kostenpflichtig bis (LUF)</label>
+          {{ form.free_up_to }}
+        </div>
+        <div class="row">
+          <label for="id_calc_type">Berechnung</label>
+          <select id="id_calc_type" name="calc_type" class="form-control">
+            <option value="percent">Prozent</option>
+            <option value="flat">Pauschal</option>
+          </select>
+        </div>
+        <div class="row">
+          <label for="id_cost_within">Kosten pro Überweisung</label>
+          {{ form.cost_within }}
+        </div>
       </div>
 
       <button type="submit" class="btn-primary">Weiter</button>
@@ -108,3 +105,4 @@
   </div>
 </body>
 </html>
+
