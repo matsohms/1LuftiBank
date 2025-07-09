@@ -50,8 +50,9 @@ class Customer(models.Model):
         ordering = ['last_name', 'first_name']
 
     def save(self, *args, **kwargs):
+        # Generiere customer_number beim ersten Speichern
         if not self.pk:
-            super().save(*args, **kwargs)
+            super().save(*args, **kwargs)  # braucht eine PK
             year = datetime.now().strftime('%y')
             self.customer_number = f"LB{year}{self.pk:06d}"
         super().save(*args, **kwargs)
@@ -113,6 +114,7 @@ class Account(models.Model):
     created_at      = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
+        # Generiere IBAN, PIN und TOTP-Secret beim ersten Save
         if not self.iban:
             self.iban = gen_iban(self.account_number)
         if not self.pin:
