@@ -209,21 +209,21 @@ def account_create_step1(request, customer_pk):
     if request.method == 'POST':
         form = AccountSettingsForm(request.POST)
         if form.is_valid():
-            # Form-Daten in Session speichern
-            request.session['new_account_data'] = form.cleaned_data
-            # Kontonummer & TOTP-Secret generieren
-            from .models import gen_account_number
-            acct_no = gen_account_number()
-            totp_secret = pyotp.random_base32()
-            request.session['new_account_number'] = acct_no
-            request.session['new_totp_secret'] = totp_secret
-            return redirect('account_create_step2', customer_pk=customer_pk)
+            acc = form.save(commit=False)
+            acc.customer = customer
+            acc.save()
+            # hier das account_pk mit übergeben:
+            return redirect(
+                'account_create_step2',
+                customer_pk=customer_pk,
+                account_pk=acc.pk
+            )
     else:
         form = AccountSettingsForm()
     return render(request, 'account_step1.html', {
-        'form': form, 'customer': customer
+        'form': form,
+        'customer': customer
     })
-
 # ——————————————————————————————————————————————————————————————
 # Konto-Erstellung Schritt 2: QR-Code & TOTP-Verifikation
 # ——————————————————————————————————————————————————————————————
